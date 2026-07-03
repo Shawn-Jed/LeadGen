@@ -243,5 +243,7 @@ def add_note(root: Path, slug: str, text: str, *, today: date) -> None:
     if row is None:
         raise ValueError(f"Lead '{slug}' nicht gefunden")
     existing = row["notiz"]
-    row["notiz"] = f"{existing}; {text}" if existing else text
+    # Zeitstempel je Notiz, damit die Zelle als kleiner Verlauf lesbar bleibt
+    entry = f"{stamp}: {text}"
+    row["notiz"] = f"{existing} · {entry}" if existing else entry
     write_pipeline(root, rows)

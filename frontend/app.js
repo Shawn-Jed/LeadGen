@@ -535,7 +535,7 @@ function renderRunDetail() {
   document.getElementById("bulk-uebernehmen").onclick = async () => {
     await doDiscoveryAction(
       () => post("/api/discovery/uebernehmen", { file, which: "auto" }),
-      res => `${res.angelegt} angelegt, ${res.uebersprungen} übersprungen`
+      res => uebernahmeMsg(res)
     );
   };
 }
@@ -612,10 +612,20 @@ function candCard(c, file) {
   if (ueb) ueb.onclick = async () => {
     await doDiscoveryAction(
       () => post("/api/discovery/uebernehmen", { file, which: [c.id] }),
-      res => `${res.angelegt} angelegt, ${res.uebersprungen} übersprungen`
+      res => uebernahmeMsg(res)
     );
   };
   return el;
+}
+
+/* Klartext-Meldung für Übernahme-Ergebnis ({angelegt:[], uebersprungen:[]}). */
+function uebernahmeMsg(res) {
+  const a = (res && res.angelegt) || [];
+  const u = (res && res.uebersprungen) || [];
+  if (a.length && !u.length) return a.length === 1 ? `Lead angelegt: ${a[0]}` : `${a.length} Leads angelegt`;
+  if (!a.length && u.length) return u.length === 1 ? `Bereits vorhanden: ${u[0]}` : `${u.length} bereits vorhanden`;
+  if (a.length && u.length) return `${a.length} angelegt, ${u.length} bereits vorhanden`;
+  return "Nichts zu übernehmen";
 }
 
 async function doDiscoveryAction(fn, msgFn) {

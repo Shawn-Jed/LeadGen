@@ -135,6 +135,26 @@ def set_status(run: dict, cand_id: int, status: str, url: str = "") -> None:
     raise ValueError(f"Kandidat id={cand_id} nicht gefunden")
 
 
+def schwaeche_fuer_lead(cand: dict) -> str:
+    """Leitet die Lead-Schwäche aus dem Discovery-Befund des Kandidaten ab.
+
+    So wandert die eigentliche Discovery-Erkenntnis (Tier-2-Mängelliste bzw.
+    kein Web-Auftritt) in den Lead, statt sie durch einen generischen Text zu ersetzen.
+    """
+    befund = (cand.get("befund") or "").strip()
+    # Tier-2-Mängelliste → Mängel selbst als Schwäche übernehmen
+    prefix = "Tier-2-Mängel:"
+    if befund.startswith(prefix):
+        maengel = befund[len(prefix):].strip()
+        return f"Website-Mängel: {maengel}" if maengel else "Website mit Mängeln"
+    if cand.get("status") == "keine_website":
+        return "keine auffindbare Website"
+    # sonst: aussagekräftigen Befund nehmen, generische OSM-Hinweise verwerfen
+    if befund and befund not in ("kein website-Tag in OSM", "Website in OSM hinterlegt"):
+        return befund
+    return "keine auffindbare Website"
+
+
 def create_leads(root: Path, run: dict, which, today: date) -> dict:
     if which == "auto":
         targets = [c for c in run["kandidaten"]
@@ -145,7 +165,7 @@ def create_leads(root: Path, run: dict, which, today: date) -> dict:
     angelegt, uebersprungen = [], []
     for c in targets:
         try:
-            slug = leadtool.add_lead(root, c["firma"], schwaeche="keine auffindbare Website", today=today)
+            slug = leadtool.add_lead(root, c["firma"], schwaeche=schwaeche_fuer_lead(c), today=today)
             c["lead_angelegt"] = True
             angelegt.append(slug)
         except ValueError:
