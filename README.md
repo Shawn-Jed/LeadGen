@@ -71,8 +71,22 @@ python -m pytest -q
 - **A Discovery** — Tier 1 (keine Website), Tier 2 (Website-Mängel), Tier 3 (qualitatives Urteil) ✅
 - **B Tracking** — datei-basiertes CRM mit Pipeline + Graduierung + Follow-up-Report ✅
 - **Cockpit** — Web-UI über die JSON-API ✅
-- **C Prototyp / D Outreach / E Portfolio** — geplant
+- **D Outreach** — Lead im Cockpit anschreiben: Wizard → Claude Code entwirft → Vorschau → SMTP-Versand ✅
+- **C Prototyp / E Portfolio** — geplant
 
-### Recht
-Kein vollautomatischer Mailversand (UWG §7) — das System bereitet Mails vor, der Versand
-erfolgt manuell.
+## Outreach (Lead anschreiben)
+
+Im Lead-Detail eines **warmen** Leads (mit E-Mail): Button **„✉ Lead anschreiben"** → Wizard
+(Angebot, Prototyp als Link/Anhang, Ton). Der Auftrag wird abgelegt; **Claude Code** entwirft
+die Mail (outreach-Skill, `.claude/skills/outreach/`), das Cockpit zeigt eine **Vorschau** —
+nach deiner Freigabe („Ja, senden") sendet das Backend per SMTP.
+
+### Setup
+`backend/.env` anlegen (Vorlage: `backend/.env.example`), SMTP-Zugang eintragen.
+`OUTREACH_SEND_MODE` steuert den Versand:
+- `draft` (Default, sicher) — legt die Mail als `.eml` ab, sendet nicht.
+- `direct` — echter SMTP-Versand nach der Freigabe.
+
+### Recht (UWG §7)
+Jede Mail wird **einzeln** in der Vorschau freigegeben — kein Stapelversand. Ob ein Betrieb
+kalt angemailt werden darf, entscheidest du; das System sendet nur nach deiner Bestätigung.

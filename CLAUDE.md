@@ -39,8 +39,14 @@ dann website_unklar-Kandidaten per WebSearch gegenprüfen (`setstatus`), dann `u
 `lead`-Skill (`.claude/skills/lead/SKILL.md`). Alles über `cd backend && python lead.py …`.
 Nie `pipeline.md` / `leads/*.md` von Hand editieren.
 
-## Recht (wichtig für D, noch nicht gebaut)
-Kein vollautomatischer Mailversand — UWG §7. System bereitet Mail vor, Shawn sendet manuell.
+## Outreach (Lead anschreiben, Subsystem D)
+`outreach`-Skill (`.claude/skills/outreach/SKILL.md`): offene Aufträge via `GET /api/outreach/pending`
+abgreifen, Mail entwerfen, per `POST /api/leads/<slug>/outreach/draft` zurückschreiben.
+SMTP-Zugang in `backend/.env` (Vorlage `.env.example`). `OUTREACH_SEND_MODE`: `draft` (Default) | `direct`.
+
+## Recht (UWG §7)
+Kein Stapelversand — jede Mail wird einzeln im Cockpit freigegeben. Direktversand (`direct`) ist
+opt-in; ob kalt angemailt werden darf, verantwortet Shawn. Default `draft` legt nur `.eml` ab.
 
 ## Specs & Pläne
 - Spec B: `docs/superpowers/specs/2026-06-28-lead-tracking-backbone-design.md`
