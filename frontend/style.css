@@ -332,3 +332,15 @@ select { cursor: pointer; appearance: none;
   .run-card { flex: 0 0 230px; }
   .topbar { flex-wrap: wrap; }
 }
+
+/* ---------- Outreach (Tasks 8-10) ---------- */
+.whatsmissing { display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin:0 0 14px; }
+.wm-label { font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; opacity:.6; margin-right:4px; }
+.wm-chip { background:rgba(180,83,31,.12); color:#b4531f; border-radius:999px; padding:2px 10px; font-size:.78rem; }
+.wm-ok { color:#3f7d4e; font-size:.82rem; }
+.wm-hint { font-size:.82rem; opacity:.75; }
+.modal-wide { max-width: 560px; }
+.mail-preview { background:rgba(0,0,0,.03); border-radius:12px; padding:14px 16px; margin-bottom:14px; }
+.mp-row { display:flex; gap:10px; margin-bottom:6px; font-size:.9rem; }
+.mp-row span { opacity:.6; min-width:56px; }
+.mp-body { white-space:pre-wrap; font-family:inherit; margin:10px 0 0; line-height:1.5; }
