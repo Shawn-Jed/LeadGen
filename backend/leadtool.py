@@ -247,3 +247,33 @@ def add_note(root: Path, slug: str, text: str, *, today: date) -> None:
     entry = f"{stamp}: {text}"
     row["notiz"] = f"{existing} · {entry}" if existing else entry
     write_pipeline(root, rows)
+
+
+def set_email(root: Path, slug: str, email: str) -> None:
+    """Setzt kontakt.email — nur bei warmen Leads (eigene Datei). Sonst ValueError."""
+    if not lead_path(root, slug).exists():
+        raise ValueError(f"E-Mail nur bei warmen Leads setzbar; '{slug}' ist nicht warm")
+    meta, body = read_lead(root, slug)
+    kontakt = meta.get("kontakt") or {}
+    kontakt["email"] = email
+    meta["kontakt"] = kontakt
+    write_lead(root, slug, meta, body)
+
+
+def mark_contacted(root: Path, slug: str, *, betreff: str, today: date) -> None:
+    """Nach Mailversand: kontaktiert_am stempeln (falls leer) + Historie-Zeile anhängen.
+
+    Ändert den Pipeline-Status NICHT (kein Downgrade eines warmen Leads auf 'kontaktiert').
+    """
+    if not lead_path(root, slug).exists():
+        raise ValueError(f"'{slug}' ist nicht warm — Anschreiben nur für warme Leads")
+    meta, body = read_lead(root, slug)
+    if not meta.get("kontaktiert_am"):
+        meta["kontaktiert_am"] = today.isoformat()
+    line = f"- {today.isoformat()}: Mail gesendet — {betreff}\n"
+    if "## Historie" in body:
+        head, _, tail = body.partition("## Historie\n")
+        body = head + "## Historie\n" + line + tail
+    else:
+        body = f"## Historie\n{line}\n" + body
+    write_lead(root, slug, meta, body)
