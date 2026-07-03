@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LeadGen — Akquise-Cockpit Hamburg</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <!-- SVG grain filter -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" />
+      <feColorMatrix type="saturate" values="0" />
+    </filter>
+  </svg>
+  <div class="bg-grain" aria-hidden="true"></div>
+  <div class="bg-washes" aria-hidden="true">
+    <span class="wash w1"></span>
+    <span class="wash w2"></span>
+    <span class="wash w3"></span>
+    <span class="wash w4"></span>
+  </div>
+
+  <header class="topbar reveal" style="--d:0">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <div class="brand-text">
+        <h1>LeadGen</h1>
+        <p>Akquise-Cockpit Hamburg</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span id="offline-badge" class="offline-badge" hidden>Demo-Daten</span>
+      <span id="today" class="today"></span>
+      <button id="btn-new-lead" class="btn btn-accent">
+        <span class="plus" aria-hidden="true">+</span> Neuer Lead
+      </button>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis" aria-label="Kennzahlen"></section>
+
+  <nav class="tabs reveal" style="--d:2" role="tablist">
+    <button class="tab is-active" data-view="pipeline" role="tab">Pipeline</button>
+    <button class="tab" data-view="discovery" role="tab">Discovery</button>
+  </nav>
+
+  <main>
+    <section id="view-pipeline" class="view is-active">
+      <div class="board" id="board"></div>
+    </section>
+
+    <section id="view-discovery" class="view">
+      <div class="discovery-layout">
+        <aside class="run-list" id="run-list" aria-label="Scan-Läufe"></aside>
+        <div class="run-detail" id="run-detail"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Drawer (Lead-Detail) -->
+  <div class="drawer-scrim" id="drawer-scrim" hidden></div>
+  <aside class="drawer" id="drawer" hidden aria-label="Lead-Detail"></aside>
+
+  <!-- Modal (Neuer Lead) -->
+  <div class="modal-scrim" id="modal-scrim" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <h2 id="modal-title" class="modal-title">Neuer Lead</h2>
+      <form id="new-lead-form" class="modal-form">
+        <label class="field">
+          <span>Firma</span>
+          <input type="text" name="firma" required autocomplete="off" placeholder="z.B. Zahnarztpraxis Eppendorf" />
+        </label>
+        <label class="field">
+          <span>Schwäche</span>
+          <input type="text" name="schwaeche" required autocomplete="off" placeholder="z.B. keine Website" />
+        </label>
+        <p class="form-error" id="new-lead-error" hidden></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="modal-cancel">Abbrechen</button>
+          <button type="submit" class="btn btn-accent">Anlegen</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast host -->
+  <div class="toast-host" id="toast-host" aria-live="polite"></div>
+
+  <script src="/config.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

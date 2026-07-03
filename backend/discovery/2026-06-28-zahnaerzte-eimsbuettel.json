@@ -1,0 +1,108 @@
+{
+  "branche": "zahnarzt",
+  "stadtteil": "Eimsbüttel",
+  "erstellt": "2026-06-28",
+  "kandidaten": [
+    {
+      "id": 1,
+      "firma": "Zahnarztpraxis Dr. Behrens",
+      "adresse": "Osterstraße 112, 20255 Hamburg",
+      "website": "",
+      "telefon": "+49 40 4012345",
+      "osm_id": "node/1001",
+      "status": "keine_website",
+      "gefundene_url": "",
+      "score": 60,
+      "befund": "kein website-Tag in OSM",
+      "lead_angelegt": false
+    },
+    {
+      "id": 2,
+      "firma": "Zahnärzte am Eimsbütteler Marktplatz",
+      "adresse": "Eimsbütteler Marktplatz 7, 20259 Hamburg",
+      "website": "http://www.zahn-eimsbuettel-marktplatz.de",
+      "telefon": "+49 40 4023456",
+      "osm_id": "way/1002",
+      "status": "analysiert",
+      "gefundene_url": "",
+      "score": 60,
+      "befund": "Tier-2-Mängel: kein HTTPS, nicht mobil, veraltet (2011), kein Kontaktformular",
+      "lead_angelegt": false,
+      "tier2": {
+        "https": false,
+        "viewport": false,
+        "copyright_jahr": 2011,
+        "veraltet": true,
+        "impressum": true,
+        "kontaktformular": false
+      },
+      "tier3": {
+        "urteil": "Stark veraltetes Layout, keine Mobilansicht, kein Online-Termin — klarer Modernisierungsbedarf.",
+        "empfehlung": "lohnt"
+      }
+    },
+    {
+      "id": 3,
+      "firma": "Dental Lounge Hoheluft",
+      "adresse": "Hoheluftchaussee 95, 20253 Hamburg",
+      "website": "https://www.dental-lounge-hoheluft.de",
+      "telefon": "+49 40 4034567",
+      "osm_id": "node/1003",
+      "status": "analysiert",
+      "gefundene_url": "",
+      "score": 10,
+      "befund": "Tier-2-Mängel: kein Kontaktformular",
+      "lead_angelegt": false,
+      "tier2": {
+        "https": true,
+        "viewport": true,
+        "copyright_jahr": 2026,
+        "veraltet": false,
+        "impressum": true,
+        "kontaktformular": false
+      },
+      "tier3": {
+        "urteil": "Modernes, responsives Design — kein offensichtlicher Bedarf.",
+        "empfehlung": "lohnt_nicht"
+      }
+    },
+    {
+      "id": 4,
+      "firma": "Kieferorthopädie Eppendorfer Weg",
+      "adresse": "Eppendorfer Weg 220, 20253 Hamburg",
+      "website": "",
+      "telefon": "",
+      "osm_id": "node/1004",
+      "status": "website_unklar",
+      "gefundene_url": "",
+      "score": 60,
+      "befund": "kein website-Tag in OSM",
+      "lead_angelegt": false
+    },
+    {
+      "id": 5,
+      "firma": "Zahnzentrum Bismarckstraße",
+      "adresse": "Bismarckstraße 44, 20259 Hamburg",
+      "website": "http://zahnzentrum-bismarck.de",
+      "telefon": "+49 40 4056789",
+      "osm_id": "way/1005",
+      "status": "analysiert",
+      "gefundene_url": "",
+      "score": 45,
+      "befund": "Tier-2-Mängel: kein HTTPS, veraltet (2015), kein Impressum",
+      "lead_angelegt": false,
+      "tier2": {
+        "https": false,
+        "viewport": true,
+        "copyright_jahr": 2015,
+        "veraltet": true,
+        "impressum": false,
+        "kontaktformular": true
+      },
+      "tier3": {
+        "urteil": "Design okay, aber Sicherheits-/Rechtsmängel (kein HTTPS, kein Impressum) — Praxis-Typ nochmal prüfen.",
+        "empfehlung": "unklar"
+      }
+    }
+  ]
+}
