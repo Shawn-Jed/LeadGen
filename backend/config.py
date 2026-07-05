@@ -31,3 +31,13 @@ def smtp_config() -> dict:
 
 def send_mode() -> str:
     return os.environ.get("OUTREACH_SEND_MODE", "draft").lower()
+
+
+def prototyp_repo_path() -> str:
+    """Lokaler Pfad zum ausgecheckten öffentlichen `prototyp`-Repo (GitHub Pages)."""
+    return os.environ.get("PROTOTYP_REPO_PATH", "")
+
+
+def prototyp_pages_base() -> str:
+    """Basis-URL der Pages-Site, z.B. https://shawn-jed.github.io/prototyp"""
+    return os.environ.get("PROTOTYP_PAGES_BASE", "")
