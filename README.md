@@ -72,7 +72,8 @@ python -m pytest -q
 - **B Tracking** — datei-basiertes CRM mit Pipeline + Graduierung + Follow-up-Report ✅
 - **Cockpit** — Web-UI über die JSON-API ✅
 - **D Outreach** — Lead im Cockpit anschreiben: Wizard → Claude Code entwirft → Vorschau → SMTP-Versand ✅
-- **C Prototyp / E Portfolio** — geplant
+- **C Prototyp** — Opt-in pro Lead: Claude Code baut eine One-Pager-Demo, Deploy nach GitHub Pages (`prototyp`-Repo), URL speist die Outreach-Mail ✅
+- **E Portfolio** — geplant
 
 ## Outreach (Lead anschreiben)
 
@@ -90,3 +91,17 @@ nach deiner Freigabe („Ja, senden") sendet das Backend per SMTP.
 ### Recht (UWG §7)
 Jede Mail wird **einzeln** in der Vorschau freigegeben — kein Stapelversand. Ob ein Betrieb
 kalt angemailt werden darf, entscheidest du; das System sendet nur nach deiner Bestätigung.
+
+## Prototyp (Live-Demo pro Lead, Subsystem C)
+
+Im Lead-Detail Button **„🎨 Prototyp bauen"** (kalt oder warm). Der Auftrag wird abgelegt;
+**Claude Code** baut die One-Pager-HTML (prototyp-Skill, `.claude/skills/prototyp/`), das
+Backend committet sie ins öffentliche **`prototyp`-Repo** und GitHub Pages liefert sie live
+unter `<PROTOTYP_PAGES_BASE>/<slug>`. Ist die Demo fertig, füllt der Outreach-Wizard den
+Prototyp-Link automatisch vor.
+
+### Setup
+Öffentliches GitHub-Repo `prototyp` anlegen, GitHub Pages aktivieren (Branch `main`, Root),
+lokal auschecken. In `backend/.env`:
+- `PROTOTYP_REPO_PATH` — lokaler Pfad zum ausgecheckten `prototyp`-Repo
+- `PROTOTYP_PAGES_BASE` — z.B. `https://shawn-jed.github.io/prototyp`
