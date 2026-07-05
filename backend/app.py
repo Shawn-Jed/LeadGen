@@ -23,8 +23,12 @@ from pathlib import Path
 
 import discotool
 import leadtool
+import config
+import mailer
+import outreach
 
 ROOT = Path(__file__).parent
+config.load_env(ROOT)  # .env → os.environ (SMTP + OUTREACH_SEND_MODE)
 # Frontend liegt als Schwester-Verzeichnis neben backend/ (entkoppelte Struktur).
 FRONTEND = ROOT.parent / "frontend"
 DEFAULT_PORT = 8723
@@ -174,6 +178,15 @@ def build_state(today: date) -> dict:
     }
 
 
+_SLUG_RE = re.compile(r"^[a-z0-9-]+$")
+
+
+def _valid_slug(slug: str) -> str:
+    if not _SLUG_RE.match(slug):
+        raise ValueError(f"Ungültiger Slug '{slug}'")
+    return slug
+
+
 def _resolve_run_file(file_param: str) -> Path:
     """Validiert einen 'discovery/<name>.json'-Pfad gegen Traversal; gibt Path zurück.
 
@@ -260,6 +273,15 @@ class CockpitHandler(BaseHTTPRequestHandler):
             if path == "/api/discovery/run":
                 self._handle_discovery_run(query)
                 return
+            if path == "/api/outreach/pending":
+                self._send_json(outreach.list_pending(ROOT))
+                return
+            m = re.fullmatch(r"/api/leads/([^/]+)/outreach", path)
+            if m:
+                slug = _valid_slug(m.group(1))
+                state = outreach.load(ROOT, slug) or {"slug": slug, "status": "none", "draft": None}
+                self._send_json(state)
+                return
             if path.startswith("/api/"):
                 self._send_error_json(404, f"Unbekannte Route: {path}")
                 return
@@ -299,6 +321,22 @@ class CockpitHandler(BaseHTTPRequestHandler):
                 return
             if path == "/api/discovery/uebernehmen":
                 self._handle_disco_uebernehmen(body)
+                return
+            m = re.fullmatch(r"/api/leads/([^/]+)/email", path)
+            if m:
+                self._handle_set_email(_valid_slug(m.group(1)), body)
+                return
+            m = re.fullmatch(r"/api/leads/([^/]+)/outreach/request", path)
+            if m:
+                self._handle_outreach_request(_valid_slug(m.group(1)), body)
+                return
+            m = re.fullmatch(r"/api/leads/([^/]+)/outreach/draft", path)
+            if m:
+                self._handle_outreach_draft(_valid_slug(m.group(1)), body)
+                return
+            m = re.fullmatch(r"/api/leads/([^/]+)/outreach/send", path)
+            if m:
+                self._handle_outreach_send(_valid_slug(m.group(1)), body)
                 return
             self._send_error_json(404, f"Unbekannte Route: {path}")
         except ValueError as exc:
@@ -393,6 +431,57 @@ class CockpitHandler(BaseHTTPRequestHandler):
         result = discotool.create_leads(ROOT, run, which, date.today())
         discotool.save_run(path, run)
         self._send_json(result)
+
+    def _handle_set_email(self, slug: str, body: dict) -> None:
+        email = (body.get("email") or "").strip()
+        if not email:
+            raise ValueError("Feld 'email' fehlt oder ist leer")
+        leadtool.set_email(ROOT, slug, email)
+        self._send_json({"ok": True})
+
+    def _handle_outreach_request(self, slug: str, body: dict) -> None:
+        # Pflicht: angebot. Optional: nutzen, ton, cta, betreff, prototyp.
+        if not (body.get("angebot") or "").strip():
+            raise ValueError("Feld 'angebot' fehlt")
+        data = outreach.save_request(ROOT, slug, body)
+        self._send_json(data, status=201)
+
+    def _handle_outreach_draft(self, slug: str, body: dict) -> None:
+        betreff = (body.get("betreff") or "").strip()
+        text = (body.get("text") or "").strip()
+        if not betreff or not text:
+            raise ValueError("Felder 'betreff' und 'text' sind Pflicht")
+        self._send_json(outreach.set_draft(ROOT, slug, betreff, text))
+
+    def _handle_outreach_send(self, slug: str, body: dict) -> None:
+        import base64
+        state = outreach.load(ROOT, slug)
+        if state is None or not state.get("draft"):
+            raise ValueError("Kein fertiger Entwurf zum Senden")
+        meta, _ = leadtool.read_lead(ROOT, slug)  # FileNotFoundError bei kaltem Lead
+        to_addr = (meta.get("kontakt") or {}).get("email") or ""
+        if not to_addr:
+            raise ValueError("Lead hat keine E-Mail-Adresse")
+        draft = state["draft"]
+        req = state.get("request") or {}
+        attachment = None
+        proto = req.get("prototyp") or {}
+        if proto.get("mode") == "anhang" and proto.get("data"):
+            attachment = {
+                "filename": proto.get("filename", "prototyp.bin"),
+                "data": base64.b64decode(proto["data"]),
+                "maintype": proto.get("maintype", "application"),
+                "subtype": proto.get("subtype", "octet-stream"),
+            }
+        cfg = config.smtp_config()
+        msg = mailer.build_message(from_addr=cfg["from_addr"], to_addr=to_addr,
+                                   subject=draft["betreff"], body=draft["text"],
+                                   attachment=attachment)
+        eml_path = (ROOT / "outreach" / f"{slug}.eml")
+        result = mailer.deliver(msg, mode=config.send_mode(), cfg=cfg, eml_path=eml_path)
+        outreach.mark_sent(ROOT, slug)
+        leadtool.mark_contacted(ROOT, slug, betreff=draft["betreff"], today=date.today())
+        self._send_json({"ok": True, **result})
 
     # --- Statisches Ausliefern ---
 

@@ -317,6 +317,29 @@ function openDrawer(slug) {
   const statusOpts = allStatuses.map(st =>
     `<option value="${st}" ${st === l.status ? "selected" : ""}>${statusLabel(st)}</option>`).join("");
 
+  const warm = l.warm === true;
+  const email = (l.kontakt && l.kontakt.email) || "";
+  const missing = warm ? missingInfo(l) : [];
+  const outreachBlock = warm ? `
+      <div class="whatsmissing">
+        <span class="wm-label">Was fehlt</span>
+        ${missing.length ? missing.map(m => `<span class="wm-chip">${esc(m)}</span>`).join("") : `<span class="wm-ok">vollständig</span>`}
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <span>E-Mail</span>
+        <div class="action-row">
+          <input type="email" id="act-email" value="${esc(email)}" placeholder="info@betrieb.de" />
+          <button class="btn btn-ghost btn-sm" id="act-email-btn">Speichern</button>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <button class="btn btn-accent" id="act-outreach-btn" ${email ? "" : "disabled title='E-Mail zuerst eintragen'"}>✉ Lead anschreiben</button>
+      </div>` : `
+      <div class="whatsmissing">
+        <span class="wm-label">Anschreiben</span>
+        <span class="wm-hint">Lead erst qualifizieren (Status ≥ in_klärung), dann anschreiben.</span>
+      </div>`;
+
   let warmFields = "";
   if (l.warm) {
     const k = l.kontakt || {};
@@ -391,6 +414,7 @@ function openDrawer(slug) {
             <button class="btn btn-accent btn-sm" id="act-wv-btn">Setzen</button>
           </div>
         </div>
+        ${outreachBlock}
         <div class="field">
           <span>Notiz hinzufügen</span>
           <textarea id="act-note" placeholder="Notiz…"></textarea>
@@ -416,6 +440,15 @@ function openDrawer(slug) {
     if (!text) { toast("Notiz ist leer", "error"); return; }
     await doAction(() => post(`/api/leads/${slug}/note`, { text }), "Notiz hinzugefügt");
   };
+
+  const emailBtn = document.getElementById("act-email-btn");
+  if (emailBtn) emailBtn.onclick = async () => {
+    const em = document.getElementById("act-email").value.trim();
+    if (!em) { toast("E-Mail ist leer", "error"); return; }
+    await doAction(() => post(`/api/leads/${slug}/email`, { email: em }), "E-Mail gespeichert");
+  };
+  const outreachBtn = document.getElementById("act-outreach-btn");
+  if (outreachBtn) outreachBtn.onclick = () => openOutreach(slug);
 }
 
 function closeDrawer() {
@@ -641,8 +674,140 @@ async function doDiscoveryAction(fn, msgFn) {
 }
 
 /* =====================================================================
+   OUTREACH-WIZARD
+   ===================================================================== */
+
+/* Gibt den Outreach-Overlay-Container zurück (lazy-create, separate von #modal-scrim). */
+function getOutreachScrim() {
+  let scrim = document.getElementById("outreach-scrim");
+  if (!scrim) {
+    scrim = document.createElement("div");
+    scrim.id = "outreach-scrim";
+    scrim.className = "modal-scrim";
+    scrim.hidden = true;
+    document.body.appendChild(scrim);
+    scrim.addEventListener("click", e => { if (e.target === scrim) { scrim.hidden = true; scrim.innerHTML = ""; } });
+  }
+  return scrim;
+}
+
+/* Outreach-Wizard: Felder vorbefüllt aus dem Lead, sendet Draft-Auftrag ans Backend. */
+function openOutreach(slug) {
+  const l = App.state.leads.find(x => x.slug === slug);
+  if (!l) return;
+  const host = getOutreachScrim();
+  host.innerHTML = `
+    <div class="modal modal-wide" role="dialog" aria-modal="true">
+      <h2 class="modal-title">Lead anschreiben — ${esc(l.firma)}</h2>
+      <form id="outreach-form" class="modal-form">
+        <label class="field"><span>Angebot / Leistung</span>
+          <input name="angebot" required value="${esc(l.ucp || "")}" placeholder="z.B. Website-Relaunch zum Festpreis" /></label>
+        <label class="field"><span>Nutzen (ROI)</span>
+          <input name="nutzen" value="${esc(l.roi_these || "")}" placeholder="z.B. mehr Anfragen über mobile Nutzer" /></label>
+        <label class="field"><span>Ton</span>
+          <select name="ton"><option>Sie, professionell</option><option>Sie, locker</option><option>Du, locker</option></select></label>
+        <label class="field"><span>Call-to-Action</span>
+          <input name="cta" value="kurzes Telefonat vorschlagen" /></label>
+        <label class="field"><span>Prototyp</span>
+          <select name="proto_mode"><option value="keiner">keiner</option><option value="link">Link</option><option value="anhang">Anhang</option></select></label>
+        <label class="field"><span>Prototyp-Link (falls Link)</span>
+          <input name="proto_link" value="${esc(l.prototyp || "")}" placeholder="https://…" /></label>
+        <label class="field"><span>Betreff (optional)</span>
+          <input name="betreff" placeholder="leer lassen = Claude schlägt vor" /></label>
+        <p class="form-error" id="outreach-error" hidden></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="outreach-cancel">Abbrechen</button>
+          <button type="submit" class="btn btn-accent">Entwurf erstellen</button>
+        </div>
+      </form>
+    </div>`;
+  host.hidden = false;
+  document.getElementById("outreach-cancel").onclick = () => { host.hidden = true; host.innerHTML = ""; };
+  document.getElementById("outreach-form").onsubmit = (e) => submitOutreach(e, slug);
+}
+
+async function submitOutreach(e, slug) {
+  e.preventDefault();
+  const f = e.target;
+  const req = {
+    angebot: f.angebot.value.trim(),
+    nutzen: f.nutzen.value.trim(),
+    ton: f.ton.value,
+    cta: f.cta.value.trim(),
+    betreff: f.betreff.value.trim(),
+    prototyp: { mode: f.proto_mode.value, url: f.proto_link.value.trim() },
+  };
+  const err = document.getElementById("outreach-error");
+  if (!req.angebot) { err.textContent = "Angebot ist Pflicht."; err.hidden = false; return; }
+  try {
+    await post(`/api/leads/${slug}/outreach/request`, req);
+    const host = getOutreachScrim();
+    host.hidden = true;
+    host.innerHTML = "";
+    toast("Auftrag erstellt — Claude Code entwirft…", "ok");
+    pollOutreach(slug);
+  } catch (e2) { err.textContent = e2.message || "Fehler"; err.hidden = false; }
+}
+
+/* =====================================================================
+   OUTREACH-VORSCHAU & POLL
+   ===================================================================== */
+
+/* Pollt den Outreach-Zustand, bis der Entwurf 'ready' ist, dann Vorschau zeigen. */
+async function pollOutreach(slug, tries = 0) {
+  if (tries > 60) { toast("Zeitüberschreitung — läuft Claude Code?", "error"); return; }
+  let state;
+  try { state = await api(`/api/leads/${slug}/outreach`); } catch (e) { toast(e.message, "error"); return; }
+  if (state.status === "ready" && state.draft) { showOutreachPreview(slug, state.draft); return; }
+  if (state.status === "sent") { toast("bereits gesendet", "ok"); return; }
+  setTimeout(() => pollOutreach(slug, tries + 1), 1500);
+}
+
+function showOutreachPreview(slug, draft) {
+  const l = App.state.leads.find(x => x.slug === slug) || {};
+  const to = (l.kontakt && l.kontakt.email) || "";
+  const host = getOutreachScrim();
+  host.innerHTML = `
+    <div class="modal modal-wide" role="dialog" aria-modal="true">
+      <h2 class="modal-title">Vorschau — ${esc(l.firma || slug)}</h2>
+      <div class="mail-preview">
+        <div class="mp-row"><span>An</span><b>${esc(to)}</b></div>
+        <div class="mp-row"><span>Betreff</span><b>${esc(draft.betreff)}</b></div>
+        <pre class="mp-body">${esc(draft.text)}</pre>
+      </div>
+      <p class="form-error" id="outreach-send-error" hidden></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="prev-cancel">Abbrechen</button>
+        <button type="button" class="btn btn-accent" id="prev-send">Ja, senden</button>
+      </div>
+    </div>`;
+  host.hidden = false;
+  document.getElementById("prev-cancel").onclick = () => { host.hidden = true; host.innerHTML = ""; };
+  document.getElementById("prev-send").onclick = async () => {
+    const err = document.getElementById("outreach-send-error");
+    try {
+      const res = await post(`/api/leads/${slug}/outreach/send`, {});
+      host.hidden = true; host.innerHTML = "";
+      toast(res.mode === "direct" ? "Mail gesendet" : "Entwurf (.eml) abgelegt", "ok");
+      await loadState();
+    } catch (e) { err.textContent = e.message || "Sendefehler"; err.hidden = false; }
+  };
+}
+
+/* =====================================================================
    HELPERS
    ===================================================================== */
+
+/* Liste fehlender Pflichtinfos eines warmen Leads (für den "Was fehlt"-Block). */
+function missingInfo(l) {
+  const miss = [];
+  if (!l.kontakt || !l.kontakt.email) miss.push("E-Mail");
+  if (!l.website) miss.push("Website");
+  if (!l.prototyp) miss.push("Prototyp");
+  if (!l.ucp) miss.push("Angebot (UCP)");
+  return miss;
+}
+
 function esc(s) {
   return String(s == null ? "" : s).replace(/[&<>"']/g, m =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
