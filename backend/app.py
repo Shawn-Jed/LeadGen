@@ -26,6 +26,8 @@ import leadtool
 import config
 import mailer
 import outreach
+import prototyp
+import deploy
 
 ROOT = Path(__file__).parent
 config.load_env(ROOT)  # .env → os.environ (SMTP + OUTREACH_SEND_MODE)
@@ -137,6 +139,14 @@ def build_state(today: date) -> dict:
         for f in sorted(leads_dir.glob("*.md")):
             meta, body = leadtool.read_lead(ROOT, f.stem)
             leads.append(_warm_lead_dict(meta, body))
+
+    # Prototyp-Status je Lead aus dem Store anreichern (kalt + warm)
+    for lead in leads:
+        ps = prototyp.load(ROOT, lead["slug"])
+        lead["prototyp_state"] = (
+            {"status": ps["status"], "url": ps.get("url")} if ps
+            else {"status": "none", "url": None}
+        )
 
     rep = leadtool.report(ROOT, today=today)
 
@@ -276,6 +286,15 @@ class CockpitHandler(BaseHTTPRequestHandler):
             if path == "/api/outreach/pending":
                 self._send_json(outreach.list_pending(ROOT))
                 return
+            if path == "/api/prototyp/pending":
+                self._send_json(prototyp.list_pending(ROOT))
+                return
+            m = re.fullmatch(r"/api/leads/([^/]+)/prototyp", path)
+            if m:
+                slug = _valid_slug(m.group(1))
+                state = prototyp.load(ROOT, slug) or {"slug": slug, "status": "none", "url": None}
+                self._send_json(state)
+                return
             m = re.fullmatch(r"/api/leads/([^/]+)/outreach", path)
             if m:
                 slug = _valid_slug(m.group(1))
@@ -337,6 +356,14 @@ class CockpitHandler(BaseHTTPRequestHandler):
             m = re.fullmatch(r"/api/leads/([^/]+)/outreach/send", path)
             if m:
                 self._handle_outreach_send(_valid_slug(m.group(1)), body)
+                return
+            m = re.fullmatch(r"/api/leads/([^/]+)/prototyp/request", path)
+            if m:
+                self._handle_prototyp_request(_valid_slug(m.group(1)), body)
+                return
+            m = re.fullmatch(r"/api/leads/([^/]+)/prototyp/draft", path)
+            if m:
+                self._handle_prototyp_draft(_valid_slug(m.group(1)), body)
                 return
             self._send_error_json(404, f"Unbekannte Route: {path}")
         except ValueError as exc:
@@ -482,6 +509,21 @@ class CockpitHandler(BaseHTTPRequestHandler):
         outreach.mark_sent(ROOT, slug)
         leadtool.mark_contacted(ROOT, slug, betreff=draft["betreff"], today=date.today())
         self._send_json({"ok": True, **result})
+
+    def _handle_prototyp_request(self, slug: str, body: dict) -> None:
+        data = prototyp.save_request(ROOT, slug, today=date.today())
+        self._send_json(data, status=201)
+
+    def _handle_prototyp_draft(self, slug: str, body: dict) -> None:
+        html = body.get("html") or ""
+        if "<html" not in html.lower():
+            raise ValueError("Feld 'html' fehlt oder ist kein HTML-Dokument")
+        repo = config.prototyp_repo_path()
+        base = config.prototyp_pages_base()
+        if not repo or not base:
+            raise ValueError("PROTOTYP_REPO_PATH/PROTOTYP_PAGES_BASE nicht gesetzt (.env)")
+        url = deploy.deploy(slug, html, repo_path=Path(repo), pages_base=base)
+        self._send_json(prototyp.mark_ready(ROOT, slug, url))
 
     # --- Statisches Ausliefern ---
 

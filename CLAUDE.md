@@ -1,7 +1,7 @@
 # LeadGen — Festpreis-Akquise Hamburg (Repo-Router)
 
 Selfwork-Projekt von Shawn: Festpreis-Projekte in Hamburg akquirieren. 5 Subsysteme
-(**A Discovery** · **B Tracking** · C Prototyp · D Outreach · E Portfolio). Aktuell gebaut: **A, B, Cockpit**.
+(**A Discovery** · **B Tracking** · **C Prototyp** · **D Outreach** · E Portfolio). Aktuell gebaut: **A, B, C, D, Cockpit**.
 
 ## Struktur (Frontend/Backend getrennt)
 ```
@@ -43,6 +43,12 @@ Nie `pipeline.md` / `leads/*.md` von Hand editieren.
 `outreach`-Skill (`.claude/skills/outreach/SKILL.md`): offene Aufträge via `GET /api/outreach/pending`
 abgreifen, Mail entwerfen, per `POST /api/leads/<slug>/outreach/draft` zurückschreiben.
 SMTP-Zugang in `backend/.env` (Vorlage `.env.example`). `OUTREACH_SEND_MODE`: `draft` (Default) | `direct`.
+
+## Prototyp (Live-Demo pro Lead, Subsystem C)
+`prototyp`-Skill (`.claude/skills/prototyp/SKILL.md`): offene Aufträge via `GET /api/prototyp/pending`
+abgreifen, One-Pager-HTML aus Lead-Kontext bauen, per `POST /api/leads/<slug>/prototyp/draft`
+zurückschreiben (Backend deployt nach GitHub Pages). Setup in `backend/.env`:
+`PROTOTYP_REPO_PATH` + `PROTOTYP_PAGES_BASE`. Opt-in pro Lead, funktioniert kalt + warm.
 
 ## Recht (UWG §7)
 Kein Stapelversand — jede Mail wird einzeln im Cockpit freigegeben. Direktversand (`direct`) ist

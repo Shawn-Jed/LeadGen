@@ -7,3 +7,4 @@ venv/
 backend/.env
 backend/outreach/*.json
 backend/outreach/*.eml
+backend/prototyp/*.json

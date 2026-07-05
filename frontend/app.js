@@ -373,6 +373,32 @@ function openDrawer(slug) {
     warmFields = `<div class="drawer-section"><h3>Notiz</h3><div class="notes"><div class="note-item">${esc(l.notiz)}</div></div></div>`;
   }
 
+  const ps = l.prototyp_state || { status: "none", url: null };
+  let prototypBlock;
+  if (ps.status === "ready") {
+    prototypBlock = `
+      <div class="field" style="margin-bottom:14px">
+        <span>🎨 Prototyp</span>
+        <div class="action-row">
+          <a class="btn btn-ghost btn-sm" href="${esc(ps.url)}" target="_blank" rel="noopener">Demo öffnen ↗</a>
+        </div>
+      </div>`;
+  } else if (ps.status === "pending") {
+    prototypBlock = `
+      <div class="field" style="margin-bottom:14px">
+        <span>🎨 Prototyp</span>
+        <div class="wm-hint">Demo wird gebaut… (läuft Claude Code?)</div>
+      </div>`;
+  } else {
+    prototypBlock = `
+      <div class="field" style="margin-bottom:14px">
+        <span>🎨 Prototyp</span>
+        <div class="action-row">
+          <button class="btn btn-accent btn-sm" id="act-proto-btn">Prototyp bauen</button>
+        </div>
+      </div>`;
+  }
+
   drawer.innerHTML = `
     <div class="drawer-inner">
       <div class="drawer-head">
@@ -415,6 +441,7 @@ function openDrawer(slug) {
           </div>
         </div>
         ${outreachBlock}
+        ${prototypBlock}
         <div class="field">
           <span>Notiz hinzufügen</span>
           <textarea id="act-note" placeholder="Notiz…"></textarea>
@@ -449,6 +476,14 @@ function openDrawer(slug) {
   };
   const outreachBtn = document.getElementById("act-outreach-btn");
   if (outreachBtn) outreachBtn.onclick = () => openOutreach(slug);
+  const protoBtn = document.getElementById("act-proto-btn");
+  if (protoBtn) protoBtn.onclick = async () => {
+    try {
+      await post(`/api/leads/${slug}/prototyp/request`, {});
+      toast("Prototyp-Auftrag erstellt — Claude Code baut…", "ok");
+      pollPrototyp(slug);
+    } catch (e) { toast(e.message || "Fehler", "error"); }
+  };
 }
 
 function closeDrawer() {
@@ -695,6 +730,10 @@ function getOutreachScrim() {
 function openOutreach(slug) {
   const l = App.state.leads.find(x => x.slug === slug);
   if (!l) return;
+  const pstate = l.prototyp_state || {};
+  const protoUrl = pstate.status === "ready" ? (pstate.url || "") : (l.prototyp || "");
+  const linkSel = protoUrl ? " selected" : "";
+  const keinerSel = protoUrl ? "" : " selected";
   const host = getOutreachScrim();
   host.innerHTML = `
     <div class="modal modal-wide" role="dialog" aria-modal="true">
@@ -709,9 +748,9 @@ function openOutreach(slug) {
         <label class="field"><span>Call-to-Action</span>
           <input name="cta" value="kurzes Telefonat vorschlagen" /></label>
         <label class="field"><span>Prototyp</span>
-          <select name="proto_mode"><option value="keiner">keiner</option><option value="link">Link</option><option value="anhang">Anhang</option></select></label>
+          <select name="proto_mode"><option value="keiner"${keinerSel}>keiner</option><option value="link"${linkSel}>Link</option><option value="anhang">Anhang</option></select></label>
         <label class="field"><span>Prototyp-Link (falls Link)</span>
-          <input name="proto_link" value="${esc(l.prototyp || "")}" placeholder="https://…" /></label>
+          <input name="proto_link" value="${esc(protoUrl)}" placeholder="https://…" /></label>
         <label class="field"><span>Betreff (optional)</span>
           <input name="betreff" placeholder="leer lassen = Claude schlägt vor" /></label>
         <p class="form-error" id="outreach-error" hidden></p>
@@ -761,6 +800,21 @@ async function pollOutreach(slug, tries = 0) {
   if (state.status === "ready" && state.draft) { showOutreachPreview(slug, state.draft); return; }
   if (state.status === "sent") { toast("bereits gesendet", "ok"); return; }
   setTimeout(() => pollOutreach(slug, tries + 1), 1500);
+}
+
+/* Pollt den Prototyp-Zustand bis 'ready', lädt dann State neu und öffnet den Drawer. */
+async function pollPrototyp(slug, tries = 0) {
+  if (tries > 120) { toast("Zeitüberschreitung — läuft Claude Code?", "error"); return; }
+  let state;
+  try { state = await api(`/api/leads/${slug}/prototyp`); } catch (e) { toast(e.message, "error"); return; }
+  if (state.status === "ready" && state.url) {
+    toast("Prototyp fertig!", "ok");
+    await loadState();
+    render();
+    if (App.openLead === slug) openDrawer(slug);
+    return;
+  }
+  setTimeout(() => pollPrototyp(slug, tries + 1), 2500);
 }
 
 function showOutreachPreview(slug, draft) {
