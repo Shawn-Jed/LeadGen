@@ -345,6 +345,12 @@ class CockpitHandler(BaseHTTPRequestHandler):
             if path == "/api/discovery/uebernehmen":
                 self._handle_disco_uebernehmen(body)
                 return
+            if path == "/api/discovery/reject":
+                self._handle_disco_mutate(body, discotool.reject)
+                return
+            if path == "/api/discovery/restore":
+                self._handle_disco_mutate(body, discotool.restore)
+                return
             m = re.fullmatch(r"/api/leads/([^/]+)/email", path)
             if m:
                 self._handle_set_email(_valid_slug(m.group(1)), body)
@@ -443,6 +449,21 @@ class CockpitHandler(BaseHTTPRequestHandler):
             raise FileNotFoundError(f"Run-Datei nicht gefunden: {file_param}")
         run = discotool.load_run(path)
         discotool.set_status(run, int(body["id"]), status, body.get("url", ""))
+        discotool.save_run(path, run)
+        self._send_json({"ok": True})
+
+    def _handle_disco_mutate(self, body: dict, fn) -> None:
+        """Gemeinsamer Handler für reject/restore: Run laden, Kandidat mutieren, speichern."""
+        file_param = body.get("file")
+        if not file_param:
+            raise ValueError("Feld 'file' fehlt")
+        if "id" not in body:
+            raise ValueError("Feld 'id' fehlt")
+        path = _resolve_run_file(file_param)
+        if not path.exists():
+            raise FileNotFoundError(f"Run-Datei nicht gefunden: {file_param}")
+        run = discotool.load_run(path)
+        fn(run, int(body["id"]))
         discotool.save_run(path, run)
         self._send_json({"ok": True})
 

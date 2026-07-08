@@ -280,6 +280,8 @@ select { cursor: pointer; appearance: none;
   border: 1px solid var(--hairline); border-radius: var(--radius-sm); padding: 16px 18px;
   margin-bottom: 10px;
 }
+.cand-abgelehnt { opacity: .55; background: transparent; border-style: dashed; }
+.cand-abgelehnt .cand-firma { text-decoration: line-through; }
 .cand-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .cand-firma { font-family: var(--font-display); font-weight: 600; font-size: 16px; }
 .cand-addr { font-size: 13px; color: var(--ink-faint); margin-top: 3px; }

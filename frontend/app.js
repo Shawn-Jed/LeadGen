@@ -109,7 +109,7 @@ const STATUS_CLASS = {
 };
 const CAND_STATUS_CLASS = {
   neu: "s-ink", website_unklar: "s-warn", keine_website: "s-accent",
-  hat_website: "s-cool", analysiert: "s-cool"
+  hat_website: "s-cool", analysiert: "s-cool", abgelehnt: "s-muted"
 };
 const CAND_STATUSES = ["neu", "website_unklar", "keine_website", "hat_website", "analysiert"];
 
@@ -125,7 +125,8 @@ const STATUS_LABEL = {
   kontaktiert: "Kontaktiert", keine_antwort: "Keine Antwort", in_klaerung: "In Klärung",
   termin_vereinbart: "Termin vereinbart", angebot_raus: "Angebot raus", gewonnen: "Gewonnen",
   verloren: "Verloren", "zurückgestellt": "Zurückgestellt",
-  neu: "Neu", website_unklar: "Website unklar", keine_website: "Keine Website", hat_website: "Hat Website"
+  neu: "Neu", website_unklar: "Website unklar", keine_website: "Keine Website", hat_website: "Hat Website",
+  abgelehnt: "Abgelehnt"
 };
 const T3_CLASS = { lohnt: "s-ok", lohnt_nicht: "s-muted", unklar: "s-warn" };
 const T3_LABEL = { lohnt: "Lohnt sich", lohnt_nicht: "Lohnt nicht", unklar: "Unklar" };
@@ -141,7 +142,8 @@ const App = {
   activeView: "pipeline",
   activeRunFile: null,
   activeRun: null,
-  openLead: null
+  openLead: null,
+  showRejected: false   // Discovery: abgelehnte Kandidaten einblenden?
 };
 
 /* ---------------------------------------------------------------------
@@ -592,22 +594,36 @@ function renderRunDetail() {
 
   const file = App.activeRunFile;
   const kand = run.kandidaten || [];
+  const aktiv = kand.filter(c => c.status !== "abgelehnt");
+  const abgelehnt = kand.filter(c => c.status === "abgelehnt");
+
+  const rejectedToggle = abgelehnt.length
+    ? `<button class="btn btn-ghost btn-sm" id="toggle-rejected">${
+        App.showRejected ? "Abgelehnte ausblenden" : `Abgelehnte zeigen (${abgelehnt.length})`}</button>`
+    : "";
 
   host.innerHTML = `
     <div class="run-detail-head">
       <div>
         <h2>${esc(run.branche)} · ${esc(run.stadtteil)}</h2>
-        <div class="rh-sub">${fmtDate(run.erstellt)} · ${kand.length} Kandidaten</div>
+        <div class="rh-sub">${fmtDate(run.erstellt)} · ${aktiv.length} Kandidaten${
+          abgelehnt.length ? ` · ${abgelehnt.length} abgelehnt` : ""}</div>
       </div>
     </div>
-    <div class="bulk-bar"><button class="btn btn-accent btn-sm" id="bulk-uebernehmen">Alle „keine_website“ übernehmen →</button></div>
+    <div class="bulk-bar">
+      <button class="btn btn-accent btn-sm" id="bulk-uebernehmen">Alle „keine_website“ übernehmen →</button>
+      ${rejectedToggle}
+    </div>
     <div id="cand-list"></div>`;
 
   const list = document.getElementById("cand-list");
-  if (!kand.length) {
-    list.innerHTML = emptyState("📭", "Keine Kandidaten", "Dieser Lauf enthält keine Einträge.");
+  const sichtbar = App.showRejected ? [...aktiv, ...abgelehnt] : aktiv;
+  if (!sichtbar.length) {
+    list.innerHTML = kand.length
+      ? emptyState("✓", "Alles gesichtet", "Alle Kandidaten abgelehnt. Umschalter zeigt sie wieder.")
+      : emptyState("📭", "Keine Kandidaten", "Dieser Lauf enthält keine Einträge.");
   } else {
-    kand.forEach(c => list.appendChild(candCard(c, file)));
+    sichtbar.forEach(c => list.appendChild(candCard(c, file)));
   }
 
   document.getElementById("bulk-uebernehmen").onclick = async () => {
@@ -616,11 +632,14 @@ function renderRunDetail() {
       res => uebernahmeMsg(res)
     );
   };
+  const tgl = document.getElementById("toggle-rejected");
+  if (tgl) tgl.onclick = () => { App.showRejected = !App.showRejected; renderRunDetail(); };
 }
 
 function candCard(c, file) {
+  const rejected = c.status === "abgelehnt";
   const el = document.createElement("div");
-  el.className = "cand";
+  el.className = "cand" + (rejected ? " cand-abgelehnt" : "");
 
   const statusOpts = CAND_STATUSES.map(st =>
     `<option value="${st}" ${st === c.status ? "selected" : ""}>${statusLabel(st)}</option>`).join("");
@@ -652,9 +671,25 @@ function candCard(c, file) {
   const scoreW = Math.max(0, Math.min(100, c.score || 0));
   const gmaps = c.google_url || googleMapsLink(c.firma, c.adresse || "");
 
-  const actions = c.lead_angelegt
-    ? `<span class="cand-done">✓ als Lead angelegt</span>`
-    : `<button class="btn btn-accent btn-sm" data-uebernehmen>→ Lead</button>`;
+  let actions;
+  if (rejected) {
+    actions = `<button class="btn btn-ghost btn-sm" data-restore>↩ Wiederherstellen</button>`;
+  } else if (c.lead_angelegt) {
+    actions = `<span class="cand-done">✓ als Lead angelegt</span>`;
+  } else {
+    actions = `<button class="btn btn-accent btn-sm" data-uebernehmen>→ Lead</button>
+               <button class="btn btn-ghost btn-sm" data-ablehnen>Ablehnen</button>`;
+  }
+
+  // Abgelehnte Karte: reduziert (kein Status-/URL-Editor), nur Wiederherstellen.
+  const actionRow = rejected
+    ? `<div class="cand-actions">${actions}</div>`
+    : `<div class="cand-actions">
+      <div class="field"><span>Status</span><select data-status>${statusOpts}</select></div>
+      <div class="field url"><span>URL (optional)</span><input type="text" data-url placeholder="https://…" value="${esc(c.gefundene_url || "")}" /></div>
+      <button class="btn btn-ghost btn-sm" data-setstatus>Speichern</button>
+      ${actions}
+    </div>`;
 
   el.innerHTML = `
     <div class="cand-top">
@@ -673,14 +708,10 @@ function candCard(c, file) {
     ${c.befund ? `<div class="cand-befund">${esc(c.befund)}</div>` : ""}
     ${chips}
     ${t3}
-    <div class="cand-actions">
-      <div class="field"><span>Status</span><select data-status>${statusOpts}</select></div>
-      <div class="field url"><span>URL (optional)</span><input type="text" data-url placeholder="https://…" value="${esc(c.gefundene_url || "")}" /></div>
-      <button class="btn btn-ghost btn-sm" data-setstatus>Speichern</button>
-      ${actions}
-    </div>`;
+    ${actionRow}`;
 
-  el.querySelector("[data-setstatus]").onclick = async () => {
+  const setBtn = el.querySelector("[data-setstatus]");
+  if (setBtn) setBtn.onclick = async () => {
     const status = el.querySelector("[data-status]").value;
     const url = el.querySelector("[data-url]").value.trim();
     await doDiscoveryAction(
@@ -693,6 +724,20 @@ function candCard(c, file) {
     await doDiscoveryAction(
       () => post("/api/discovery/uebernehmen", { file, which: [c.id] }),
       res => uebernahmeMsg(res)
+    );
+  };
+  const abl = el.querySelector("[data-ablehnen]");
+  if (abl) abl.onclick = async () => {
+    await doDiscoveryAction(
+      () => post("/api/discovery/reject", { file, id: c.id }),
+      () => `„${c.firma}“ abgelehnt`
+    );
+  };
+  const res = el.querySelector("[data-restore]");
+  if (res) res.onclick = async () => {
+    await doDiscoveryAction(
+      () => post("/api/discovery/restore", { file, id: c.id }),
+      () => `„${c.firma}“ wiederhergestellt`
     );
   };
   return el;

@@ -48,7 +48,7 @@
       "website": "https://www.dental-lounge-hoheluft.de",
       "telefon": "+49 40 4034567",
       "osm_id": "node/1003",
-      "status": "analysiert",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 10,
       "befund": "Tier-2-Mängel: kein Kontaktformular",
@@ -64,7 +64,8 @@
       "tier3": {
         "urteil": "Modernes, responsives Design — kein offensichtlicher Bedarf.",
         "empfehlung": "lohnt_nicht"
-      }
+      },
+      "status_vor_ablehnung": "analysiert"
     },
     {
       "id": 4,

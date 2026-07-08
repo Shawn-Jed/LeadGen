@@ -80,7 +80,8 @@ def parse_elements(data: dict) -> list[dict]:
     return out
 
 
-STATUSES = {"neu", "website_unklar", "keine_website", "hat_website", "analysiert"}
+REJECTED_STATUS = "abgelehnt"
+STATUSES = {"neu", "website_unklar", "keine_website", "hat_website", "analysiert", REJECTED_STATUS}
 
 
 def score_tier1(cand: dict) -> int:
@@ -134,6 +135,31 @@ def set_status(run: dict, cand_id: int, status: str, url: str = "") -> None:
                 c["gefundene_url"] = url
             return
     raise ValueError(f"Kandidat id={cand_id} nicht gefunden")
+
+
+def _find_cand(run: dict, cand_id: int) -> dict:
+    for c in run["kandidaten"]:
+        if c["id"] == cand_id:
+            return c
+    raise ValueError(f"Kandidat id={cand_id} nicht gefunden")
+
+
+def reject(run: dict, cand_id: int) -> None:
+    """Kandidat ablehnen: Status → 'abgelehnt', vorherigen Status für Restore merken.
+
+    So fällt er aus 'keine_website' heraus und wird von `create_leads(..., "auto")`
+    nicht mehr angefasst. Doppeltes Ablehnen überschreibt den gemerkten Status nicht.
+    """
+    c = _find_cand(run, cand_id)
+    if c["status"] != REJECTED_STATUS:
+        c["status_vor_ablehnung"] = c["status"]
+    c["status"] = REJECTED_STATUS
+
+
+def restore(run: dict, cand_id: int) -> None:
+    """Ablehnung zurücknehmen: Status auf den gemerkten Wert (sonst 'neu')."""
+    c = _find_cand(run, cand_id)
+    c["status"] = c.pop("status_vor_ablehnung", "neu")
 
 
 def schwaeche_fuer_lead(cand: dict) -> str:
