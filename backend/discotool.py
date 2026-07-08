@@ -95,6 +95,7 @@ def new_run(branche: str, stadtteil: str | None, candidates: list[dict], today: 
             "id": i,
             "firma": c["firma"],
             "adresse": c.get("adresse", ""),
+            "google_url": leadtool.google_maps_link(c["firma"], c.get("adresse", "")),
             "website": c.get("website", ""),
             "telefon": c.get("telefon", ""),
             "osm_id": c.get("osm_id", ""),
@@ -165,7 +166,8 @@ def create_leads(root: Path, run: dict, which, today: date) -> dict:
     angelegt, uebersprungen = [], []
     for c in targets:
         try:
-            slug = leadtool.add_lead(root, c["firma"], schwaeche=schwaeche_fuer_lead(c), today=today)
+            slug = leadtool.add_lead(root, c["firma"], schwaeche=schwaeche_fuer_lead(c),
+                                     adresse=c.get("adresse", ""), today=today)
             c["lead_angelegt"] = True
             angelegt.append(slug)
         except ValueError:

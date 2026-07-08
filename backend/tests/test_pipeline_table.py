@@ -3,8 +3,8 @@ import leadtool
 
 def test_render_then_parse_roundtrip():
     rows = [
-        {"slug": "mueller-sanitaer", "firma": "Müller Sanitär", "status": "kontaktiert",
-         "schwaeche": "keine Mobil-Ansicht", "kontaktiert_am": "2026-06-20",
+        {"slug": "mueller-sanitaer", "firma": "Müller Sanitär", "adresse": "Hauptstr. 1, Hamburg",
+         "status": "kontaktiert", "schwaeche": "keine Mobil-Ansicht", "kontaktiert_am": "2026-06-20",
          "wiedervorlage": "2026-07-05", "notiz": ""},
     ]
     text = leadtool.render_pipeline_table(rows)

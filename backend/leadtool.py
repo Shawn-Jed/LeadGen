@@ -3,15 +3,18 @@ from __future__ import annotations
 
 import re
 import unicodedata
+import urllib.parse
 from datetime import date
 from pathlib import Path
 
 import yaml
 
 # Spalten der Sammeltabelle (interne Keys, Reihenfolge = Spaltenreihenfolge)
-PIPELINE_COLUMNS = ["slug", "firma", "status", "schwaeche", "kontaktiert_am", "wiedervorlage", "notiz"]
+PIPELINE_COLUMNS = ["slug", "firma", "adresse", "status", "schwaeche", "kontaktiert_am", "wiedervorlage", "notiz"]
 # Anzeige-Header (Spaltenüberschriften in pipeline.md)
-PIPELINE_HEADERS = ["slug", "Firma", "Status", "Schwäche", "kontaktiert_am", "Wiedervorlage", "Notiz"]
+PIPELINE_HEADERS = ["slug", "Firma", "Adresse", "Status", "Schwäche", "kontaktiert_am", "Wiedervorlage", "Notiz"]
+# Index der Adresse-Spalte — für abwärtskompatibles Parsen alter (adresse-loser) Tabellen.
+_ADRESSE_IDX = PIPELINE_COLUMNS.index("adresse")
 
 COLD_STATUSES = {"identifiziert", "analysiert", "prototyp_erstellt", "kontaktiert", "keine_antwort", "verloren", "zurückgestellt"}
 WARM_STATUSES = {"in_klaerung", "termin_vereinbart", "angebot_raus", "gewonnen"}
@@ -56,11 +59,29 @@ def parse_pipeline_table(text: str) -> list[dict]:
     rows: list[dict] = []
     for ln in table_lines[2:]:  # [0]=Header, [1]=Separator
         cells = [c.strip() for c in ln.strip().strip("|").split("|")]
+        # Alt-Schema ohne Adresse-Spalte → leere Adresse einschieben (self-healing beim nächsten write).
+        if len(cells) == len(PIPELINE_COLUMNS) - 1:
+            cells.insert(_ADRESSE_IDX, "")
         if len(cells) != len(PIPELINE_COLUMNS):
             continue
         values = ["" if c == EMPTY_CELL else c for c in cells]
         rows.append(dict(zip(PIPELINE_COLUMNS, values)))
     return rows
+
+
+def google_maps_link(firma: str, adresse: str = "", *, ort: str = "Hamburg") -> str:
+    """Deterministischer Google-Maps-Suchlink aus Firma (+ Adresse). Kein API-Key nötig.
+
+    Ergänzt 'Hamburg', falls weder Firma noch Adresse den Ort schon nennen — so landet
+    die Suche zuverlässig beim richtigen Eintrag. Leere Firma → leerer Link.
+    """
+    teile = [t.strip() for t in (firma, adresse) if t and t.strip()]
+    if not teile:
+        return ""
+    if ort and not any(ort.lower() in t.lower() for t in teile):
+        teile.append(ort)
+    query = urllib.parse.quote_plus(" ".join(teile))
+    return f"https://www.google.com/maps/search/?api=1&query={query}"
 
 
 # Nach .lower() reichen Kleinbuchstaben-Keys.
@@ -86,13 +107,13 @@ def write_pipeline(root: Path, rows: list[dict]) -> None:
 
 
 def add_lead(root: Path, firma: str, *, schwaeche: str = "", status: str = "identifiziert",
-             today: date) -> str:
+             adresse: str = "", today: date) -> str:
     slug = slugify(firma)
     rows = read_pipeline(root)
     if any(r["slug"] == slug for r in rows) or lead_path(root, slug).exists():
         raise ValueError(f"Lead '{slug}' existiert bereits")
-    rows.append({"slug": slug, "firma": firma, "status": status, "schwaeche": schwaeche,
-                 "kontaktiert_am": "", "wiedervorlage": "", "notiz": ""})
+    rows.append({"slug": slug, "firma": firma, "adresse": adresse, "status": status,
+                 "schwaeche": schwaeche, "kontaktiert_am": "", "wiedervorlage": "", "notiz": ""})
     write_pipeline(root, rows)
     return slug
 
@@ -139,6 +160,8 @@ def graduate(root: Path, slug: str, *, status: str, today: date) -> Path:
     meta = {
         "firma": row["firma"], "slug": slug, "status": status,
         "prioritaet": "mittel", "ort": "", "branche": "", "website": "",
+        "adresse": row.get("adresse", ""),
+        "google_eintrag": google_maps_link(row["firma"], row.get("adresse", "")),
         "schwaeche": _split_schwaeche(row["schwaeche"]),
         "ucp": "", "roi_these": "", "prototyp": "",
         "kontakt": {"name": "", "rolle": "", "email": "", "quelle": ""},

@@ -103,6 +103,10 @@ def _warm_lead_dict(meta: dict, body: str) -> dict:
         "ort": meta.get("ort", ""),
         "branche": meta.get("branche", ""),
         "website": meta.get("website", ""),
+        "adresse": meta.get("adresse", ""),
+        # Fallback: fehlt das Feld (Alt-Lead), Link live aus Firma (+ Adresse) ableiten.
+        "google_eintrag": meta.get("google_eintrag")
+        or leadtool.google_maps_link(meta.get("firma", ""), meta.get("adresse", "")),
         "ucp": meta.get("ucp", ""),
         "roi_these": meta.get("roi_these", ""),
         "prototyp": meta.get("prototyp", ""),

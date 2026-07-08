@@ -112,6 +112,14 @@ const CAND_STATUS_CLASS = {
   hat_website: "s-cool", analysiert: "s-cool"
 };
 const CAND_STATUSES = ["neu", "website_unklar", "keine_website", "hat_website", "analysiert"];
+
+// Deterministischer Google-Maps-Suchlink aus Firma (+ Adresse) — Fallback, wenn kein Feld geliefert.
+function googleMapsLink(firma, adresse = "") {
+  const teile = [firma, adresse].map(t => (t || "").trim()).filter(Boolean);
+  if (!teile.length) return "";
+  if (!teile.some(t => /hamburg/i.test(t))) teile.push("Hamburg");
+  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(teile.join(" "));
+}
 const STATUS_LABEL = {
   identifiziert: "Identifiziert", analysiert: "Analysiert", prototyp_erstellt: "Prototyp erstellt",
   kontaktiert: "Kontaktiert", keine_antwort: "Keine Antwort", in_klaerung: "In Klärung",
@@ -343,9 +351,11 @@ function openDrawer(slug) {
   let warmFields = "";
   if (l.warm) {
     const k = l.kontakt || {};
+    const gmaps = l.google_eintrag || googleMapsLink(l.firma, l.adresse || l.ort || "");
     const rows = [
       ["Priorität", l.prioritaet], ["Ort", l.ort], ["Branche", l.branche],
       ["Website", l.website ? `<a href="https://${l.website.replace(/^https?:\/\//, "")}" target="_blank" rel="noopener">${esc(l.website)}</a>` : null],
+      ["Google-Eintrag", gmaps ? `<a href="${esc(gmaps)}" target="_blank" rel="noopener">Eintrag ↗</a>` : null],
       ["UCP", l.ucp], ["ROI-These", l.roi_these], ["Prototyp", l.prototyp ? `<a href="${esc(l.prototyp)}" target="_blank" rel="noopener">öffnen ↗</a>` : null],
       ["Kontakt", k.name ? `${esc(k.name)}${k.rolle ? " · " + esc(k.rolle) : ""}` : null],
       ["E-Mail", k.email ? `<a href="mailto:${esc(k.email)}">${esc(k.email)}</a>` : null],
@@ -640,6 +650,7 @@ function candCard(c, file) {
   }
 
   const scoreW = Math.max(0, Math.min(100, c.score || 0));
+  const gmaps = c.google_url || googleMapsLink(c.firma, c.adresse || "");
 
   const actions = c.lead_angelegt
     ? `<span class="cand-done">✓ als Lead angelegt</span>`
@@ -650,6 +661,7 @@ function candCard(c, file) {
       <div>
         <div class="cand-firma">${esc(c.firma)}</div>
         <div class="cand-addr">${esc(c.adresse || "")}</div>
+        ${gmaps ? `<a class="cand-gmaps" href="${esc(gmaps)}" target="_blank" rel="noopener">Google-Eintrag ↗</a>` : ""}
         <span class="badge ${CAND_STATUS_CLASS[c.status] || "s-ink"}" style="margin-top:8px">${statusLabel(c.status)}</span>
       </div>
       <div class="cand-score">
