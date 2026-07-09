@@ -1,0 +1,21 @@
+{
+  "branche": "elektriker",
+  "stadtteil": "Barmbek-Nord",
+  "erstellt": "2026-07-08",
+  "kandidaten": [
+    {
+      "id": 1,
+      "firma": "Minnemann Elektrotechnik",
+      "adresse": "Kranichweg 11, 22305 Hamburg",
+      "google_url": "https://www.google.com/maps/search/?api=1&query=Minnemann+Elektrotechnik+Kranichweg+11%2C+22305+Hamburg",
+      "website": "http://minnemann.de",
+      "telefon": "+49 40 6914200",
+      "osm_id": "way/148466298",
+      "status": "hat_website",
+      "gefundene_url": "",
+      "score": 0,
+      "befund": "Website in OSM hinterlegt",
+      "lead_angelegt": false
+    }
+  ]
+}

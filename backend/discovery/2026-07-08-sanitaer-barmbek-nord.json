@@ -1,0 +1,21 @@
+{
+  "branche": "sanitaer",
+  "stadtteil": "Barmbek-Nord",
+  "erstellt": "2026-07-08",
+  "kandidaten": [
+    {
+      "id": 1,
+      "firma": "Luth Sanitärtechnik GmbH",
+      "adresse": "Lämmersieth 19, 22305 Hamburg",
+      "google_url": "https://www.google.com/maps/search/?api=1&query=Luth+Sanit%C3%A4rtechnik+GmbH+L%C3%A4mmersieth+19%2C+22305+Hamburg",
+      "website": "",
+      "telefon": "+49 40 2800024",
+      "osm_id": "way/118381068",
+      "status": "hat_website",
+      "gefundene_url": "https://luth-sanitaer.de/",
+      "score": 60,
+      "befund": "kein website-Tag in OSM",
+      "lead_angelegt": false
+    }
+  ]
+}
