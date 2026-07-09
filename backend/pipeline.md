@@ -5,7 +5,7 @@ Eine Zeile pro Lead. Warme Leads (ab `in_klaerung`) wandern nach `leads/<slug>.m
 | slug | Firma | Adresse | Status | Schwäche | kontaktiert_am | Wiedervorlage | Notiz |
 |---|---|---|---|---|---|---|---|
 | zahnarztpraxis-dr-behrens | Zahnarztpraxis Dr. Behrens | — | kontaktiert | keine auffindbare Website | 2026-06-30 | — | — |
-| tischlerei-norddeich | Tischlerei Norddeich | — | identifiziert | kein HTTPS; kein Impressum | — | 2026-06-25 | — |
+| tischlerei-norddeich | Tischlerei Norddeich | — | identifiziert | kein HTTPS; kein Impressum | — | — | — |
 | style-of-hair | Style of Hair | Fuhlsbüttler Straße 175, 22307 Hamburg | identifiziert | keine auffindbare Website | — | — | — |
 | salon-48 | Salon 48 | Fuhlsbüttler Straße 181, 22307 Hamburg | identifiziert | keine auffindbare Website | — | — | — |
 | station-haar | Station Haar | — | identifiziert | keine auffindbare Website | — | — | — |
@@ -40,3 +40,19 @@ Eine Zeile pro Lead. Warme Leads (ab `in_klaerung`) wandern nach `leads/<slug>.m
 | kebab-kitchen | Kebab Kitchen | Fuhlsbüttler Straße 386, 22309 Hamburg | identifiziert | keine auffindbare Website | — | — | — |
 | antje-schnorr-finck | Antje Schnorr-Finck | Fuhlsbüttler Straße 275, 22307 Hamburg | identifiziert | keine auffindbare Website | — | — | — |
 | christian-oberdoerfer | Christian Oberdörfer | Fuhlsbüttler Straße 134, 22305 Hamburg | identifiziert | keine auffindbare Website | — | — | — |
+| zahnarzt-burat | Zahnarzt Burat | — | identifiziert | keine auffindbare Website | — | — | — |
+| katzschner | Katzschner | Halbenkamp 10 | identifiziert | keine auffindbare Website | — | — | — |
+| wiebke-jungkamp | Wiebke Jungkamp | Fuhlsbüttler Straße 167, 22307 Hamburg | identifiziert | keine auffindbare Website | — | — | — |
+| zahnarztpraxis-dr-med-martina-schreyack | Zahnarztpraxis Dr. med. Martina Schreyack | Fuhlsbüttler Straße 230, 22307 Hamburg | identifiziert | keine auffindbare Website | — | — | — |
+| zahnaerztliche-praxis-joern-bender | Zahnärztliche Praxis Jörn Bender | — | identifiziert | keine auffindbare Website | — | — | — |
+| zahnarztpraxis-viola-spruth | Zahnarztpraxis Viola Spruth | Fuhlsbüttler Straße 416, 22309 Hamburg | identifiziert | keine auffindbare Website | — | — | — |
+| kieferorthopaedie-an-der-fuhle | Kieferorthopädie an der Fuhle | Fuhlsbüttler Straße 92, 22305 Hamburg | identifiziert | keine auffindbare Website | — | — | — |
+| minnemann-elektrotechnik | Minnemann Elektrotechnik | Kranichweg 11, 22305 Hamburg | identifiziert | keine auffindbare Website | — | — | — |
+| urologe-dr-schoenfelder-und-strasser | Urologe Dr. Schönfelder und Straßer | Fuhlsbüttler Straße 182, 22307 Hamburg | identifiziert | keine auffindbare Website | — | — | — |
+| nikolaus-behr | Nikolaus Behr | — | identifiziert | keine auffindbare Website | — | — | — |
+| heinze-malessa-maenz-siebje | Heinze, Malessa, Mänz-Siebje | Krüsistraße 15, 22305 Hamburg | identifiziert | keine auffindbare Website | — | — | — |
+| dr-med-christian-tiemann | Dr. med. Christian Tiemann | Fuhlsbüttler Straße 257 | identifiziert | keine auffindbare Website | — | — | — |
+| vitali-triers | Vitali Triers | — | identifiziert | keine auffindbare Website | — | — | — |
+| frauenarztpraxis-barmbek | Frauenarztpraxis Barmbek | Fuhlsbüttler Straße 135, 22305 Hamburg | identifiziert | keine auffindbare Website | — | — | — |
+| luettliv | LüttLiv | Maurienstraße 19, 22305 Hamburg | identifiziert | keine auffindbare Website | — | — | — |
+| testbetrieb-verify-gmbh | Testbetrieb Verify GmbH | — | inaktiv | keine Website | — | — | 2026-07-09: Top Google-Bewertungen, aber keine Website — guter Kandidat · 2026-07-09: Inaktiv: passt preislich nicht |
