@@ -16,7 +16,7 @@ PIPELINE_HEADERS = ["slug", "Firma", "Adresse", "Status", "Schwäche", "kontakti
 # Index der Adresse-Spalte — für abwärtskompatibles Parsen alter (adresse-loser) Tabellen.
 _ADRESSE_IDX = PIPELINE_COLUMNS.index("adresse")
 
-COLD_STATUSES = {"identifiziert", "analysiert", "prototyp_erstellt", "kontaktiert", "keine_antwort", "verloren", "zurückgestellt"}
+COLD_STATUSES = {"identifiziert", "analysiert", "prototyp_erstellt", "kontaktiert", "keine_antwort", "verloren", "zurückgestellt", "inaktiv"}
 WARM_STATUSES = {"in_klaerung", "termin_vereinbart", "angebot_raus", "gewonnen"}
 ALL_STATUSES = COLD_STATUSES | WARM_STATUSES
 

@@ -25,6 +25,23 @@ def test_status_warm_update_changes_frontmatter(repo):
     assert meta["status"] == "angebot_raus"
 
 
+def test_status_inaktiv_cold_stays_in_pipeline(repo):
+    leadtool.add_lead(repo, "Müller Sanitär", today=date(2026, 6, 18))
+    leadtool.set_status(repo, "mueller-sanitaer", "inaktiv", today=date(2026, 6, 20))
+    row = leadtool.read_pipeline(repo)[0]
+    assert row["status"] == "inaktiv"
+    assert not leadtool.lead_path(repo, "mueller-sanitaer").exists()
+
+
+def test_status_inaktiv_warm_keeps_file(repo):
+    leadtool.add_lead(repo, "Müller Sanitär", today=date(2026, 6, 18))
+    leadtool.set_status(repo, "mueller-sanitaer", "in_klaerung", today=date(2026, 6, 25))
+    leadtool.set_status(repo, "mueller-sanitaer", "inaktiv", today=date(2026, 6, 28))
+    assert leadtool.lead_path(repo, "mueller-sanitaer").exists()  # warme Datei bleibt (Regel 6)
+    meta, _ = leadtool.parse_frontmatter(leadtool.lead_path(repo, "mueller-sanitaer").read_text(encoding="utf-8"))
+    assert meta["status"] == "inaktiv"
+
+
 def test_status_invalid_raises(repo):
     leadtool.add_lead(repo, "Müller Sanitär", today=date(2026, 6, 18))
     try:

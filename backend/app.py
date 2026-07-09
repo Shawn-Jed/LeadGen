@@ -39,7 +39,7 @@ DEFAULT_PORT = 8723
 STATUS_REIHENFOLGE = [
     "identifiziert", "analysiert", "prototyp_erstellt", "kontaktiert",
     "keine_antwort", "in_klaerung", "termin_vereinbart", "angebot_raus",
-    "gewonnen", "verloren", "zurückgestellt",
+    "gewonnen", "verloren", "zurückgestellt", "inaktiv",
 ]
 
 # MIME-Typen nach Endung fürs statische Ausliefern
@@ -412,6 +412,10 @@ class CockpitHandler(BaseHTTPRequestHandler):
             raise ValueError("Feld 'firma' fehlt oder ist leer")
         schwaeche = body.get("schwaeche") or ""
         slug = leadtool.add_lead(ROOT, firma, schwaeche=schwaeche, today=date.today())
+        # Optionale Anlege-Notiz (warum angenommen / was verbesserbar) direkt anhängen
+        notiz = (body.get("notiz") or "").strip()
+        if notiz:
+            leadtool.add_note(ROOT, slug, notiz, today=date.today())
         self._send_json({"slug": slug}, status=201)
 
     def _handle_lead_status(self, slug: str, body: dict) -> None:
