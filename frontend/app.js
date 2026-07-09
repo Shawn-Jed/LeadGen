@@ -105,7 +105,7 @@ const STATUS_CLASS = {
   identifiziert: "s-ink", analysiert: "s-cool", prototyp_erstellt: "s-cool",
   kontaktiert: "s-accent", keine_antwort: "s-danger",
   in_klaerung: "s-accent", termin_vereinbart: "s-warn", angebot_raus: "s-warn",
-  gewonnen: "s-ok", verloren: "s-muted", "zurückgestellt": "s-muted"
+  gewonnen: "s-ok", verloren: "s-muted", "zurückgestellt": "s-muted", inaktiv: "s-muted"
 };
 const CAND_STATUS_CLASS = {
   neu: "s-ink", website_unklar: "s-warn", keine_website: "s-accent",
@@ -124,7 +124,7 @@ const STATUS_LABEL = {
   identifiziert: "Identifiziert", analysiert: "Analysiert", prototyp_erstellt: "Prototyp erstellt",
   kontaktiert: "Kontaktiert", keine_antwort: "Keine Antwort", in_klaerung: "In Klärung",
   termin_vereinbart: "Termin vereinbart", angebot_raus: "Angebot raus", gewonnen: "Gewonnen",
-  verloren: "Verloren", "zurückgestellt": "Zurückgestellt",
+  verloren: "Verloren", "zurückgestellt": "Zurückgestellt", inaktiv: "Inaktiv",
   neu: "Neu", website_unklar: "Website unklar", keine_website: "Keine Website", hat_website: "Hat Website",
   abgelehnt: "Abgelehnt"
 };
@@ -143,8 +143,19 @@ const App = {
   activeRunFile: null,
   activeRun: null,
   openLead: null,
-  showRejected: false   // Discovery: abgelehnte Kandidaten einblenden?
+  showRejected: false,  // Discovery: abgelehnte Kandidaten einblenden?
+  candFilter: { mode: "alle", minScore: 0 },  // Discovery-Filter: alle|keine_website|veraltet + Score-Schwelle
+  dragSlug: null        // Board: aktuell gezogener Lead
 };
+
+// Prüft, ob ein Kandidat den aktiven Discovery-Filter erfüllt.
+function candMatchesFilter(c) {
+  const f = App.candFilter;
+  if ((c.score || 0) < f.minScore) return false;
+  if (f.mode === "keine_website") return c.status === "keine_website";
+  if (f.mode === "veraltet") return !!(c.tier2 && c.tier2.veraltet);
+  return true;
+}
 
 /* ---------------------------------------------------------------------
    API-HELPER
@@ -267,6 +278,7 @@ function renderBoard() {
     const col = document.createElement("div");
     col.className = "column reveal";
     col.style.setProperty("--d", 7 + i);
+    col.dataset.status = st;
     col.innerHTML = `<div class="col-head"><span class="col-title">${statusLabel(st)}</span><span class="col-count">${leads.length}</span></div>`;
     const body = document.createElement("div");
     body.className = "col-body";
@@ -277,7 +289,47 @@ function renderBoard() {
     }
     col.appendChild(body);
     board.appendChild(col);
+
+    // Drop-Ziel: Karte fallen lassen → Statuswechsel auf diese Spalte
+    col.addEventListener("dragover", e => {
+      if (!App.dragSlug) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      col.classList.add("drop-target");
+    });
+    col.addEventListener("dragleave", e => {
+      if (!col.contains(e.relatedTarget)) col.classList.remove("drop-target");
+    });
+    col.addEventListener("drop", e => {
+      e.preventDefault();
+      col.classList.remove("drop-target");
+      const slug = e.dataTransfer.getData("text/plain") || App.dragSlug;
+      if (slug) moveLeadToStatus(slug, st);
+    });
   });
+}
+
+/* Karte per Drag-and-drop in eine Status-Spalte verschieben — mit Guards:
+   - gleicher Status → ignorieren
+   - warm → kalt: blockiert (CRM-Regel 6, kein Zurückziehen)
+   - kalt → warm: Bestätigung (Graduierung legt eigene Datei an) */
+async function moveLeadToStatus(slug, targetStatus) {
+  const l = App.state.leads.find(x => x.slug === slug);
+  if (!l || l.status === targetStatus) return;
+
+  const warmSet = new Set(App.state.statuses.warm || []);
+  const sourceWarm = l.warm === true;
+  const targetWarm = warmSet.has(targetStatus);
+
+  if (sourceWarm && !targetWarm) {
+    toast("Warme Leads können nicht zurück in die kalte Pipeline (CRM-Regel).", "error");
+    return;
+  }
+  if (!sourceWarm && targetWarm) {
+    if (!confirm(`„${l.firma}“ zu „${statusLabel(targetStatus)}“ (warm) verschieben?\n\nDer Lead graduiert und bekommt eine eigene Datei.`)) return;
+  }
+  await doAction(() => post(`/api/leads/${slug}/status`, { status: targetStatus }),
+    `„${l.firma}“ → ${statusLabel(targetStatus)}`);
 }
 
 function leadCard(l, isDue, isStale) {
@@ -288,6 +340,21 @@ function leadCard(l, isDue, isStale) {
   else if (isDue) cls += " flag";
   card.className = cls;
   card.tabIndex = 0;
+  card.draggable = !App.offline;      // Offline: keine echten Mutationen
+  card.dataset.slug = l.slug;
+  card.dataset.status = l.status;
+  card.dataset.warm = l.warm ? "1" : "";
+  card.addEventListener("dragstart", e => {
+    card.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", l.slug);
+    App.dragSlug = l.slug;
+  });
+  card.addEventListener("dragend", () => {
+    card.classList.remove("dragging");
+    App.dragSlug = null;
+    document.querySelectorAll(".column.drop-target").forEach(c => c.classList.remove("drop-target"));
+  });
 
   const flag = isStale
     ? `<span class="flag-dot danger" title="Keine Antwort > 14 Tage"></span>`
@@ -456,8 +523,13 @@ function openDrawer(slug) {
         ${prototypBlock}
         <div class="field">
           <span>Notiz hinzufügen</span>
-          <textarea id="act-note" placeholder="Notiz…"></textarea>
-          <div style="margin-top:8px;text-align:right"><button class="btn btn-accent btn-sm" id="act-note-btn">Hinzufügen</button></div>
+          <textarea id="act-note" placeholder="Notiz… (bei „inaktiv“ = Grund)"></textarea>
+          <div class="note-actions">
+            ${l.status === "inaktiv"
+              ? ""
+              : `<button class="btn btn-ghost btn-sm" id="act-inaktiv-btn" title="Setzt Status auf „inaktiv“ und speichert die Notiz als Grund">⏸ Auf inaktiv setzen</button>`}
+            <button class="btn btn-accent btn-sm" id="act-note-btn">Hinzufügen</button>
+          </div>
         </div>
       </div>
     </div>`;
@@ -478,6 +550,20 @@ function openDrawer(slug) {
     const text = document.getElementById("act-note").value.trim();
     if (!text) { toast("Notiz ist leer", "error"); return; }
     await doAction(() => post(`/api/leads/${slug}/note`, { text }), "Notiz hinzugefügt");
+  };
+  const inaktivBtn = document.getElementById("act-inaktiv-btn");
+  if (inaktivBtn) inaktivBtn.onclick = async () => {
+    const grund = document.getElementById("act-note").value.trim();
+    if (!grund) {
+      toast("Bitte kurz den Grund als Notiz eintragen", "error");
+      document.getElementById("act-note").focus();
+      return;
+    }
+    // Erst Grund als Notiz sichern, dann Status setzen — beide über die App (kein direkter Datei-Zugriff).
+    await doAction(async () => {
+      await post(`/api/leads/${slug}/note`, { text: `Inaktiv: ${grund}` });
+      await post(`/api/leads/${slug}/status`, { status: "inaktiv" });
+    }, "Auf inaktiv gesetzt");
   };
 
   const emailBtn = document.getElementById("act-email-btn");
@@ -535,9 +621,10 @@ async function submitNewLead(e) {
   const form = e.target;
   const firma = form.firma.value.trim();
   const schwaeche = form.schwaeche.value.trim();
+  const notiz = form.notiz.value.trim();
   const errEl = document.getElementById("new-lead-error");
   errEl.hidden = true;
-  if (!firma || !schwaeche) { errEl.textContent = "Bitte beide Felder ausfüllen."; errEl.hidden = false; return; }
+  if (!firma || !schwaeche) { errEl.textContent = "Bitte Firma und Schwäche ausfüllen."; errEl.hidden = false; return; }
 
   if (App.offline) {
     closeModal();
@@ -545,7 +632,7 @@ async function submitNewLead(e) {
     return;
   }
   try {
-    await post("/api/leads", { firma, schwaeche });
+    await post("/api/leads", { firma, schwaeche, notiz });
     closeModal();
     toast("Lead angelegt", "ok");
     await loadState();
@@ -593,6 +680,7 @@ function renderRunDetail() {
   if (!run) { host.innerHTML = emptyState("🔭", "Lauf wählen", "Wähle links einen Scan-Lauf aus."); return; }
 
   const file = App.activeRunFile;
+  const cf = App.candFilter;
   const kand = run.kandidaten || [];
   const aktiv = kand.filter(c => c.status !== "abgelehnt");
   const abgelehnt = kand.filter(c => c.status === "abgelehnt");
@@ -614,13 +702,25 @@ function renderRunDetail() {
       <button class="btn btn-accent btn-sm" id="bulk-uebernehmen">Alle „keine_website“ übernehmen →</button>
       ${rejectedToggle}
     </div>
+    <div class="cand-filter">
+      <div class="seg" role="group" aria-label="Kandidaten filtern">
+        <button class="seg-btn ${cf.mode === "alle" ? "on" : ""}" data-fmode="alle">Alle</button>
+        <button class="seg-btn ${cf.mode === "keine_website" ? "on" : ""}" data-fmode="keine_website">Ohne Website</button>
+        <button class="seg-btn ${cf.mode === "veraltet" ? "on" : ""}" data-fmode="veraltet">Veraltete Website</button>
+      </div>
+      <label class="score-filter">
+        <span>Score ≥ <b id="score-val">${cf.minScore}</b></span>
+        <input type="range" id="score-range" min="0" max="100" step="5" value="${cf.minScore}" />
+      </label>
+    </div>
     <div id="cand-list"></div>`;
 
   const list = document.getElementById("cand-list");
-  const sichtbar = App.showRejected ? [...aktiv, ...abgelehnt] : aktiv;
+  const basis = App.showRejected ? [...aktiv, ...abgelehnt] : aktiv;
+  const sichtbar = basis.filter(candMatchesFilter);
   if (!sichtbar.length) {
     list.innerHTML = kand.length
-      ? emptyState("✓", "Alles gesichtet", "Alle Kandidaten abgelehnt. Umschalter zeigt sie wieder.")
+      ? emptyState("🔍", "Kein Treffer", "Kein Kandidat passt zum Filter. Schwelle senken oder Filter zurücksetzen.")
       : emptyState("📭", "Keine Kandidaten", "Dieser Lauf enthält keine Einträge.");
   } else {
     sichtbar.forEach(c => list.appendChild(candCard(c, file)));
@@ -634,6 +734,16 @@ function renderRunDetail() {
   };
   const tgl = document.getElementById("toggle-rejected");
   if (tgl) tgl.onclick = () => { App.showRejected = !App.showRejected; renderRunDetail(); };
+
+  host.querySelectorAll("[data-fmode]").forEach(b => {
+    b.onclick = () => { App.candFilter.mode = b.dataset.fmode; renderRunDetail(); };
+  });
+  const range = document.getElementById("score-range");
+  if (range) {
+    // Live-Vorschau der Zahl beim Ziehen, Re-Render erst beim Loslassen (kein Flackern).
+    range.oninput = () => { document.getElementById("score-val").textContent = range.value; };
+    range.onchange = () => { App.candFilter.minScore = Number(range.value); renderRunDetail(); };
+  }
 }
 
 function candCard(c, file) {
