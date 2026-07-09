@@ -830,12 +830,7 @@ function candCard(c, file) {
     );
   };
   const ueb = el.querySelector("[data-uebernehmen]");
-  if (ueb) ueb.onclick = async () => {
-    await doDiscoveryAction(
-      () => post("/api/discovery/uebernehmen", { file, which: [c.id] }),
-      res => uebernahmeMsg(res)
-    );
-  };
+  if (ueb) ueb.onclick = () => openUebernehmeDialog(file, c);
   const abl = el.querySelector("[data-ablehnen]");
   if (abl) abl.onclick = async () => {
     await doDiscoveryAction(
@@ -861,6 +856,37 @@ function uebernahmeMsg(res) {
   if (!a.length && u.length) return u.length === 1 ? `Bereits vorhanden: ${u[0]}` : `${u.length} bereits vorhanden`;
   if (a.length && u.length) return `${a.length} angelegt, ${u.length} bereits vorhanden`;
   return "Nichts zu übernehmen";
+}
+
+/* Übernahme-Dialog: Website-URL + Notiz erfassen, dann Kandidaten als Lead anlegen. */
+function openUebernehmeDialog(file, c) {
+  if (App.offline) { toast("Offline (Demo-Daten) — keine echte Aktion", "error"); return; }
+  const scrim = document.getElementById("ueber-scrim");
+  document.getElementById("ueber-firma").textContent = c.firma;
+  const urlEl = document.getElementById("ueber-url");
+  const notizEl = document.getElementById("ueber-notiz");
+  urlEl.value = c.gefundene_url || c.website || "";   // ggf. in Tier-2 gefundene URL vorbelegen
+  notizEl.value = "";
+  scrim.hidden = false;
+  setTimeout(() => urlEl.focus(), 50);
+
+  const confirmBtn = document.getElementById("ueber-confirm");
+  const closeEls = scrim.querySelectorAll("[data-ueber-close]");
+  const close = () => {
+    scrim.hidden = true;
+    confirmBtn.onclick = null;
+    closeEls.forEach(b => (b.onclick = null));
+  };
+  closeEls.forEach(b => (b.onclick = close));
+  confirmBtn.onclick = async () => {
+    const website = urlEl.value.trim();
+    const notiz = notizEl.value.trim();
+    close();
+    await doDiscoveryAction(
+      () => post("/api/discovery/uebernehmen", { file, which: [c.id], website, notiz }),
+      res => uebernahmeMsg(res)
+    );
+  };
 }
 
 async function doDiscoveryAction(fn, msgFn) {

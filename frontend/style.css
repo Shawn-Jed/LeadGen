@@ -264,6 +264,8 @@ select { cursor: pointer; appearance: none;
 .modal { background: var(--surface-solid); border: 1px solid var(--hairline-strong); border-radius: var(--radius); box-shadow: var(--shadow-lg); width: min(420px, 100%); padding: 28px; animation: pop .22s ease; }
 @keyframes pop { from { transform: translateY(8px); opacity: 0; } }
 .modal-title { font-family: var(--font-display); font-weight: 600; font-size: 22px; margin: 0 0 18px; padding-bottom: 14px; border-bottom: 1px solid var(--hairline); }
+.modal-sub { margin: -8px 0 16px; font-size: 13.5px; color: var(--ink-soft); }
+.modal-sub strong { color: var(--ink); font-weight: 600; }
 .modal-form { display: flex; flex-direction: column; gap: 15px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
 .form-error { color: var(--danger); font-size: 13px; margin: 0; font-weight: 500; }

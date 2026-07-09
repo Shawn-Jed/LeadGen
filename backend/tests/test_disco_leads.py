@@ -33,3 +33,22 @@ def test_create_leads_by_ids(repo):
     discotool.set_status(run, 2, "keine_website")
     res = discotool.create_leads(repo, run, [2], date(2026, 6, 28))
     assert res["angelegt"] == ["praxis-b"]
+
+
+def test_create_leads_single_applies_website_and_note(repo):
+    run = _run_with("Praxis A")
+    discotool.set_status(run, 1, "keine_website")
+    discotool.create_leads(repo, run, [1], date(2026, 6, 28),
+                           website="praxis-a.de", notiz="starke Bewertungen, kein Web-Auftritt")
+    row = leadtool.read_pipeline(repo)[0]
+    assert row["website"] == "praxis-a.de"
+    assert "starke Bewertungen" in row["notiz"]
+
+
+def test_create_leads_bulk_ignores_website(repo):
+    # website/notiz nur bei Einzel-Übernahme — Bulk darf sie nicht auf alle schmieren.
+    run = _run_with("Praxis A", "Praxis B")
+    discotool.set_status(run, 1, "keine_website")
+    discotool.set_status(run, 2, "keine_website")
+    discotool.create_leads(repo, run, "auto", date(2026, 6, 28), website="x.de", notiz="Grund")
+    assert all(r["website"] == "" for r in leadtool.read_pipeline(repo))

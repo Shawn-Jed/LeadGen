@@ -132,6 +132,9 @@ def build_state(today: date) -> dict:
             "firma": r.get("firma", ""),
             "status": r.get("status", ""),
             "schwaeche": r.get("schwaeche", ""),
+            "adresse": r.get("adresse", ""),
+            "website": r.get("website", ""),
+            "google_eintrag": leadtool.google_maps_link(r.get("firma", ""), r.get("adresse", "")),
             "kontaktiert_am": r.get("kontaktiert_am", ""),
             "wiedervorlage": r.get("wiedervorlage", ""),
             "notiz": r.get("notiz", ""),
@@ -484,7 +487,9 @@ class CockpitHandler(BaseHTTPRequestHandler):
         if not path.exists():
             raise FileNotFoundError(f"Run-Datei nicht gefunden: {file_param}")
         run = discotool.load_run(path)
-        result = discotool.create_leads(ROOT, run, which, date.today())
+        website = (body.get("website") or "").strip()
+        notiz = (body.get("notiz") or "").strip()
+        result = discotool.create_leads(ROOT, run, which, date.today(), website=website, notiz=notiz)
         discotool.save_run(path, run)
         self._send_json(result)
 
