@@ -507,30 +507,16 @@ function openDrawer(slug) {
   }
 
   const ps = l.prototyp_state || { status: "none", url: null };
-  let prototypBlock;
-  if (ps.status === "ready") {
-    prototypBlock = `
+  const protoUrl = (ps.status === "ready" && ps.url) ? ps.url : (l.prototyp || "");
+  const prototypBlock = `
       <div class="field" style="margin-bottom:14px">
         <span>🎨 Prototyp</span>
         <div class="action-row">
-          <a class="btn btn-ghost btn-sm" href="${esc(ps.url)}" target="_blank" rel="noopener">Demo öffnen ↗</a>
+          <button class="btn btn-accent btn-sm" id="act-proto-btn">📋 Prototyp-Prompt kopieren</button>
+          ${protoUrl ? `<a class="btn btn-ghost btn-sm" href="${esc(protoUrl)}" target="_blank" rel="noopener">Demo öffnen ↗</a>` : ""}
         </div>
+        <div class="field-hint" style="margin-top:6px">Kopiert einen fertigen Auftrag mit allen Lead-Daten — im Claude-Projekt einfügen und Wünsche ergänzen.</div>
       </div>`;
-  } else if (ps.status === "pending") {
-    prototypBlock = `
-      <div class="field" style="margin-bottom:14px">
-        <span>🎨 Prototyp</span>
-        <div class="wm-hint">Demo wird gebaut… (läuft Claude Code?)</div>
-      </div>`;
-  } else {
-    prototypBlock = `
-      <div class="field" style="margin-bottom:14px">
-        <span>🎨 Prototyp</span>
-        <div class="action-row">
-          <button class="btn btn-accent btn-sm" id="act-proto-btn">Prototyp bauen</button>
-        </div>
-      </div>`;
-  }
 
   drawer.innerHTML = `
     <div class="drawer-inner">
@@ -632,13 +618,7 @@ function openDrawer(slug) {
   const outreachBtn = document.getElementById("act-outreach-btn");
   if (outreachBtn) outreachBtn.onclick = () => openOutreach(slug);
   const protoBtn = document.getElementById("act-proto-btn");
-  if (protoBtn) protoBtn.onclick = async () => {
-    try {
-      await post(`/api/leads/${slug}/prototyp/request`, {});
-      toast("Prototyp-Auftrag erstellt — Claude Code baut…", "ok");
-      pollPrototyp(slug);
-    } catch (e) { toast(e.message || "Fehler", "error"); }
-  };
+  if (protoBtn) protoBtn.onclick = () => copyPrototypPrompt(slug);
 }
 
 function closeDrawer() {
@@ -1090,18 +1070,60 @@ async function pollOutreach(slug, tries = 0) {
 }
 
 /* Pollt den Prototyp-Zustand bis 'ready', lädt dann State neu und öffnet den Drawer. */
-async function pollPrototyp(slug, tries = 0) {
-  if (tries > 120) { toast("Zeitüberschreitung — läuft Claude Code?", "error"); return; }
-  let state;
-  try { state = await api(`/api/leads/${slug}/prototyp`); } catch (e) { toast(e.message, "error"); return; }
-  if (state.status === "ready" && state.url) {
-    toast("Prototyp fertig!", "ok");
-    await loadState();
-    render();
-    if (App.openLead === slug) openDrawer(slug);
-    return;
+/* Baut aus dem Lead einen fertigen Prototyp-Auftrag (Prompt) für ein separates Claude-Projekt. */
+function buildPrototypPrompt(l) {
+  const lines = [];
+  const add = (k, v) => { if (v && String(v).trim()) lines.push(`${k}: ${String(v).trim()}`); };
+  add("Firma", l.firma);
+  add("Branche/Ort", [l.branche, l.ort].filter(Boolean).join(" · "));
+  add("Adresse", l.adresse);
+  add("Aktuelle Website", l.website || "keine");
+  add("Google-Eintrag", l.google_eintrag);
+  add("Schwäche(n)", splitTags(l.schwaeche).join(", "));
+  const notizen = (Array.isArray(l.notizen) && l.notizen.length) ? l.notizen.join(" | ") : (l.notiz || "");
+  add("Notiz", notizen);
+  add("UCP", l.ucp);
+  return [
+    `Baue einen Prototyp (Demo-One-Pager) für: ${l.firma || l.slug}`,
+    "",
+    ...lines,
+    "",
+    "Ziel: Eine moderne, self-contained One-Pager-HTML (CSS/JS inline, kein externes CDN/Font/Script),",
+    "die genau die genannte(n) Schwäche(n) behebt. Branche/Ort spiegeln, plausible Leistungen, klarer CTA.",
+    "Keine erfundenen Fakten über den Betrieb hinaus (keine erfundenen Preise, Bewertungen, Adressen).",
+    "",
+    "Zusätzliche Wünsche zum Prototyp:",
+    "- "
+  ].join("\n");
+}
+
+/* Prompt in die Zwischenablage kopieren; Fallback-Dialog, falls die Clipboard-API blockt. */
+async function copyPrototypPrompt(slug) {
+  const l = App.state.leads.find(x => x.slug === slug);
+  if (!l) return;
+  const text = buildPrototypPrompt(l);
+  try {
+    await navigator.clipboard.writeText(text);
+    toast("Prototyp-Prompt kopiert — im Claude-Projekt einfügen", "ok");
+  } catch (e) {
+    showCopyFallback(text);
   }
-  setTimeout(() => pollPrototyp(slug, tries + 1), 2500);
+}
+
+/* Fallback: Text im Dialog anzeigen und markieren, damit manuell (Strg+C) kopiert werden kann. */
+function showCopyFallback(text) {
+  const host = getOutreachScrim();
+  host.innerHTML = `
+    <div class="modal modal-wide" role="dialog" aria-modal="true">
+      <h2 class="modal-title">Prototyp-Prompt kopieren</h2>
+      <p class="wm-hint">Automatisches Kopieren wurde blockiert — Text ist markiert, mit Strg+C kopieren.</p>
+      <textarea id="copy-fallback-ta" rows="16" style="width:100%">${esc(text)}</textarea>
+      <div class="modal-actions"><button class="btn btn-accent" id="copy-fallback-close">Schließen</button></div>
+    </div>`;
+  host.hidden = false;
+  const ta = document.getElementById("copy-fallback-ta");
+  ta.focus(); ta.select();
+  document.getElementById("copy-fallback-close").onclick = () => { host.hidden = true; host.innerHTML = ""; };
 }
 
 function showOutreachPreview(slug, draft) {
