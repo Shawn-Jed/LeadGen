@@ -113,6 +113,22 @@ const CAND_STATUS_CLASS = {
 };
 const CAND_STATUSES = ["neu", "website_unklar", "keine_website", "hat_website", "analysiert"];
 
+// Festes Schwäche-Tag-Set für die Lead-Anlage (+ eigene Tags ad hoc). Tags = schwaeche-Liste.
+const SCHWAECHE_TAGS = [
+  "Altes Design", "Nicht mobil", "Keine/nur Google", "Fehlende Funktionalität",
+  "Langsam", "Kein SSL", "Schlechtes SEO", "Kein Impressum"
+];
+// schwaeche kommt als kommagetrennter String (kalt) bzw. Liste→String (warm, app.py) → in Tags splitten.
+function splitTags(raw) {
+  return String(raw || "").split(/[;,]/).map(s => s.trim()).filter(Boolean);
+}
+// Schwäche-String als Badge-Pills rendern.
+function tagBadges(raw) {
+  const tags = splitTags(raw);
+  if (!tags.length) return "";
+  return `<div class="tag-pills">${tags.map(t => `<span class="tag-pill">${esc(t)}</span>`).join("")}</div>`;
+}
+
 // Deterministischer Google-Maps-Suchlink aus Firma (+ Adresse) — Fallback, wenn kein Feld geliefert.
 function googleMapsLink(firma, adresse = "") {
   const teile = [firma, adresse].map(t => (t || "").trim()).filter(Boolean);
@@ -145,7 +161,10 @@ const App = {
   openLead: null,
   showRejected: false,  // Discovery: abgelehnte Kandidaten einblenden?
   candFilter: { mode: "alle", minScore: 0 },  // Discovery-Filter: alle|keine_website|veraltet + Score-Schwelle
-  dragSlug: null        // Board: aktuell gezogener Lead
+  dragSlug: null,       // Board: aktuell gezogener Lead
+  newLeadTags: new Set(),   // Neuer-Lead-Modal: aktuell gewählte Schwäche-Tags
+  ueberTags: new Set(),     // Übernahme-Dialog: gewählte Schwäche-Tags (optional, sonst Auto-Schwäche)
+  leadTagFilter: new Set()  // Pipeline: aktive Tag-Filter (OR-Match, leer = alle)
 };
 
 // Prüft, ob ein Kandidat den aktiven Discovery-Filter erfüllt.
@@ -220,8 +239,40 @@ function render() {
   const s = App.state;
   document.getElementById("today").textContent = "Heute · " + fmtDate(s.today);
   renderKpis();
+  renderLeadTagbar();
   renderBoard();
   renderRunList();
+}
+
+// Pipeline-Filterleiste: alle real vorkommenden Schwäche-Tags als Toggle-Chips (OR-Match).
+function renderLeadTagbar() {
+  const host = document.getElementById("lead-tagbar");
+  if (!host) return;
+  const counts = new Map();
+  (App.state.leads || []).forEach(l => splitTags(l.schwaeche).forEach(t => counts.set(t, (counts.get(t) || 0) + 1)));
+  // Aktive Filter, die es nicht mehr gibt, verwerfen.
+  [...App.leadTagFilter].forEach(t => { if (!counts.has(t)) App.leadTagFilter.delete(t); });
+  if (!counts.size) { host.hidden = true; host.innerHTML = ""; return; }
+  host.hidden = false;
+  const tags = [...counts.keys()].sort((a, b) => a.localeCompare(b, "de"));
+  host.innerHTML =
+    `<span class="tagbar-label">Filter</span>` +
+    tags.map(t => `<button type="button" class="tag-chip${App.leadTagFilter.has(t) ? " on" : ""}" data-tag="${esc(t)}">${esc(t)}<span class="tag-count">${counts.get(t)}</span></button>`).join("") +
+    (App.leadTagFilter.size ? `<button type="button" class="tagbar-clear" id="tagbar-clear">× zurücksetzen</button>` : "");
+  host.querySelectorAll(".tag-chip").forEach(b => b.addEventListener("click", () => {
+    const t = b.dataset.tag;
+    if (App.leadTagFilter.has(t)) App.leadTagFilter.delete(t); else App.leadTagFilter.add(t);
+    renderLeadTagbar();
+    renderBoard();
+  }));
+  const clear = document.getElementById("tagbar-clear");
+  if (clear) clear.addEventListener("click", () => { App.leadTagFilter.clear(); renderLeadTagbar(); renderBoard(); });
+}
+
+// Lead erfüllt den aktiven Tag-Filter (leer = alle; sonst mind. ein Tag muss passen).
+function leadMatchesTagFilter(l) {
+  if (!App.leadTagFilter.size) return true;
+  return splitTags(l.schwaeche).some(t => App.leadTagFilter.has(t));
 }
 
 function renderKpis() {
@@ -270,7 +321,7 @@ function renderBoard() {
   const order = s.statuses.reihenfolge;
   const byStatus = {};
   order.forEach(st => byStatus[st] = []);
-  s.leads.forEach(l => { (byStatus[l.status] = byStatus[l.status] || []).push(l); });
+  s.leads.filter(leadMatchesTagFilter).forEach(l => { (byStatus[l.status] = byStatus[l.status] || []).push(l); });
 
   // Spalten ohne Reihenfolge-Eintrag ans Ende
   const cols = order.filter(st => byStatus[st] !== undefined);
@@ -374,7 +425,7 @@ function leadCard(l, isDue, isStale) {
       <div style="display:flex;gap:6px;align-items:center">${flag}${warmBadge}</div>
     </div>
     <span class="badge ${STATUS_CLASS[l.status] || "s-ink"}" style="margin-top:9px">${statusLabel(l.status)}</span>
-    ${l.schwaeche ? `<div class="card-schwaeche">${esc(l.schwaeche)}</div>` : ""}
+    ${l.schwaeche ? tagBadges(l.schwaeche) : ""}
     ${meta.length ? `<div class="card-meta">${meta.join("")}</div>` : ""}
   `;
   card.addEventListener("click", () => openDrawer(l.slug));
@@ -494,11 +545,14 @@ function openDrawer(slug) {
         <button class="drawer-close" id="drawer-close" aria-label="Schließen">×</button>
       </div>
 
-      ${l.schwaeche ? `<div class="drawer-section"><h3>Schwäche</h3><p style="margin:0;font-size:14.5px;color:var(--ink-soft);line-height:1.5">${esc(l.schwaeche)}</p></div>` : ""}
+      ${l.schwaeche ? `<div class="drawer-section"><h3>Schwäche</h3>${tagBadges(l.schwaeche)}</div>` : ""}
 
       <div class="drawer-section">
         <h3>Stammdaten</h3>
         <div class="field-grid">
+          ${(!warm && l.website) ? `<div class="frow"><span class="fk">Website</span><span class="fv"><a href="https://${l.website.replace(/^https?:\/\//, "")}" target="_blank" rel="noopener">${esc(l.website)}</a></span></div>` : ""}
+          ${(!warm && l.google_eintrag) ? `<div class="frow"><span class="fk">Google-Eintrag</span><span class="fv"><a href="${esc(l.google_eintrag)}" target="_blank" rel="noopener">Eintrag ↗</a></span></div>` : ""}
+          ${(!warm && l.adresse) ? `<div class="frow"><span class="fk">Adresse</span><span class="fv">${esc(l.adresse)}</span></div>` : ""}
           <div class="frow"><span class="fk">Kontaktiert am</span><span class="fv">${l.kontaktiert_am ? fmtDate(l.kontaktiert_am) : "—"}</span></div>
           <div class="frow"><span class="fk">Wiedervorlage</span><span class="fv">${l.wiedervorlage ? fmtDate(l.wiedervorlage) : "—"}</span></div>
         </div>
@@ -615,19 +669,46 @@ function openModal() {
   document.getElementById("new-lead-error").hidden = true;
   const form = document.getElementById("new-lead-form");
   form.reset();
+  App.newLeadTags = new Set();
+  renderTagPicker(document.getElementById("new-lead-tags"), App.newLeadTags);
   setTimeout(() => form.querySelector("input[name=firma]").focus(), 50);
 }
 function closeModal() { document.getElementById("modal-scrim").hidden = true; }
+
+// Generischer Schwäche-Tag-Picker: festes Set + bereits gewählte eigene Tags, Klick toggelt.
+function renderTagPicker(host, sel) {
+  if (!host) return;
+  const all = [...SCHWAECHE_TAGS];
+  sel.forEach(t => { if (!all.includes(t)) all.push(t); });
+  host.innerHTML = all.map(t =>
+    `<button type="button" class="tag-chip${sel.has(t) ? " on" : ""}" data-tag="${esc(t)}">${esc(t)}</button>`
+  ).join("");
+  host.querySelectorAll(".tag-chip").forEach(b => b.addEventListener("click", () => {
+    const t = b.dataset.tag;
+    if (sel.has(t)) sel.delete(t); else sel.add(t);
+    renderTagPicker(host, sel);
+  }));
+}
+
+// Eigenen Tag aus einem Textfeld ins Set übernehmen und neu rendern.
+function addTagFromInput(inputEl, sel, host) {
+  const val = (inputEl.value || "").trim();
+  if (!val) return;
+  sel.add(val);
+  inputEl.value = "";
+  renderTagPicker(host, sel);
+}
 
 async function submitNewLead(e) {
   e.preventDefault();
   const form = e.target;
   const firma = form.firma.value.trim();
-  const schwaeche = form.schwaeche.value.trim();
+  const schwaeche = [...App.newLeadTags].join(", ");
   const notiz = form.notiz.value.trim();
   const errEl = document.getElementById("new-lead-error");
   errEl.hidden = true;
-  if (!firma || !schwaeche) { errEl.textContent = "Bitte Firma und Schwäche ausfüllen."; errEl.hidden = false; return; }
+  if (!firma) { errEl.textContent = "Bitte Firma ausfüllen."; errEl.hidden = false; return; }
+  if (!App.newLeadTags.size) { errEl.textContent = "Bitte mindestens einen Schwäche-Tag wählen."; errEl.hidden = false; return; }
 
   if (App.offline) {
     closeModal();
@@ -876,6 +957,9 @@ function openUebernehmeDialog(file, c) {
   const notizEl = document.getElementById("ueber-notiz");
   urlEl.value = c.gefundene_url || c.website || "";   // ggf. in Tier-2 gefundene URL vorbelegen
   notizEl.value = "";
+  App.ueberTags = new Set();
+  renderTagPicker(document.getElementById("ueber-tags"), App.ueberTags);
+  document.getElementById("ueber-tag-custom").value = "";
   scrim.hidden = false;
   setTimeout(() => urlEl.focus(), 50);
 
@@ -890,9 +974,10 @@ function openUebernehmeDialog(file, c) {
   confirmBtn.onclick = async () => {
     const website = urlEl.value.trim();
     const notiz = notizEl.value.trim();
+    const schwaeche = [...App.ueberTags].join(", ");   // leer → Backend nutzt Auto-Schwäche
     close();
     await doDiscoveryAction(
-      () => post("/api/discovery/uebernehmen", { file, which: [c.id], website, notiz }),
+      () => post("/api/discovery/uebernehmen", { file, which: [c.id], website, notiz, schwaeche }),
       res => uebernahmeMsg(res)
     );
   };
@@ -1101,6 +1186,18 @@ function init() {
   document.getElementById("btn-new-lead").addEventListener("click", openModal);
   document.getElementById("modal-cancel").addEventListener("click", closeModal);
   document.getElementById("new-lead-form").addEventListener("submit", submitNewLead);
+  const nlTagHost = document.getElementById("new-lead-tags");
+  const nlTagInput = document.getElementById("new-lead-tag-custom");
+  document.getElementById("new-lead-tag-add").addEventListener("click", () => addTagFromInput(nlTagInput, App.newLeadTags, nlTagHost));
+  nlTagInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") { e.preventDefault(); addTagFromInput(nlTagInput, App.newLeadTags, nlTagHost); }
+  });
+  const ubTagHost = document.getElementById("ueber-tags");
+  const ubTagInput = document.getElementById("ueber-tag-custom");
+  document.getElementById("ueber-tag-add").addEventListener("click", () => addTagFromInput(ubTagInput, App.ueberTags, ubTagHost));
+  ubTagInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") { e.preventDefault(); addTagFromInput(ubTagInput, App.ueberTags, ubTagHost); }
+  });
   document.getElementById("drawer-scrim").addEventListener("click", closeDrawer);
   document.getElementById("modal-scrim").addEventListener("click", e => { if (e.target.id === "modal-scrim") closeModal(); });
   document.addEventListener("keydown", e => {

@@ -340,6 +340,38 @@ select { cursor: pointer; appearance: none;
 .score-filter b { color: var(--ink); font-variant-numeric: tabular-nums; min-width: 1.6em; display: inline-block; }
 .score-filter input[type="range"] { width: 160px; accent-color: var(--accent); cursor: pointer; }
 
+/* ---------- Schwäche-Tags (Chips im Modal, Filter, Badges) ---------- */
+.tag-picker { display: flex; flex-wrap: wrap; gap: 7px; }
+.tag-chip {
+  font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--ink-soft);
+  padding: 5px 11px; background: var(--bg); border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  transition: color .12s, border-color .12s, background .12s;
+}
+.tag-chip:hover { color: var(--ink); border-color: var(--ink-soft); }
+.tag-chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tag-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.tag-count { font-size: 11px; font-weight: 700; opacity: .55; font-variant-numeric: tabular-nums; }
+.tag-custom { display: flex; gap: 8px; align-items: center; }
+.tag-custom input { flex: 1; }
+
+/* Pipeline-Filterleiste */
+.tagbar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  padding: 10px 14px; margin-bottom: 16px;
+  border: 1px solid var(--hairline); border-radius: var(--radius-sm); background: var(--accent-soft);
+}
+.tagbar-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-faint); margin-right: 4px; }
+.tagbar-clear { background: none; border: none; color: var(--ink-soft); font-size: 12.5px; cursor: pointer; padding: 4px 8px; }
+.tagbar-clear:hover { color: var(--danger); }
+
+/* Badge-Pills auf Karte + Drawer */
+.tag-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.tag-pill {
+  font-size: 12px; color: var(--cool); background: var(--cool-bg);
+  border: 1px solid var(--hairline); border-radius: var(--radius-sm); padding: 2px 8px; line-height: 1.5;
+}
+
 /* ---------- Empty states ---------- */
 .empty { text-align: center; padding: 70px 24px; color: var(--ink-faint); }
 .empty .emoji { font-size: 30px; opacity: .4; filter: grayscale(1); }

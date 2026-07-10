@@ -49,6 +49,7 @@
 
   <main>
     <section id="view-pipeline" class="view is-active">
+      <div class="tagbar" id="lead-tagbar" hidden></div>
       <div class="board" id="board"></div>
     </section>
 
@@ -73,12 +74,16 @@
           <span>Firma</span>
           <input type="text" name="firma" required autocomplete="off" placeholder="z.B. Zahnarztpraxis Eppendorf" />
         </label>
+        <div class="field">
+          <span>Schwäche <span class="field-hint">mind. 1 Tag wählen</span></span>
+          <div class="tag-picker" id="new-lead-tags"></div>
+          <div class="tag-custom">
+            <input type="text" id="new-lead-tag-custom" autocomplete="off" placeholder="+ eigener Tag" />
+            <button type="button" class="btn btn-ghost btn-sm" id="new-lead-tag-add">Hinzufügen</button>
+          </div>
+        </div>
         <label class="field">
-          <span>Schwäche</span>
-          <input type="text" name="schwaeche" required autocomplete="off" placeholder="z.B. keine Website" />
-        </label>
-        <label class="field">
-          <span>Notiz <span class="field-hint">optional — warum angenommen, was verbesserbar</span></span>
+          <span>Notiz <span class="field-hint">optional — Freitext, warum angenommen, was verbesserbar</span></span>
           <textarea name="notiz" rows="3" autocomplete="off" placeholder="z.B. Google-Bewertungen stark, aber keine Website — guter Kandidat für Festpreis-Onepager"></textarea>
         </label>
         <p class="form-error" id="new-lead-error" hidden></p>
@@ -100,6 +105,14 @@
           <span>Website URL <span class="field-hint">optional — falls vorhanden/gefunden</span></span>
           <input type="text" id="ueber-url" autocomplete="off" placeholder="https://…" />
         </label>
+        <div class="field">
+          <span>Schwäche <span class="field-hint">optional — Tags wählen, sonst automatisch aus Discovery-Befund</span></span>
+          <div class="tag-picker" id="ueber-tags"></div>
+          <div class="tag-custom">
+            <input type="text" id="ueber-tag-custom" autocomplete="off" placeholder="+ eigener Tag" />
+            <button type="button" class="btn btn-ghost btn-sm" id="ueber-tag-add">Hinzufügen</button>
+          </div>
+        </div>
         <label class="field">
           <span>Notiz <span class="field-hint">optional — warum übernommen, was verbesserbar</span></span>
           <textarea id="ueber-notiz" rows="3" autocomplete="off" placeholder="z.B. viele Google-Bewertungen, aber kein Web-Auftritt"></textarea>

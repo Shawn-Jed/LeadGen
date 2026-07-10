@@ -182,20 +182,22 @@ def schwaeche_fuer_lead(cand: dict) -> str:
     return "keine auffindbare Website"
 
 
-def create_leads(root: Path, run: dict, which, today: date, *, website: str = "", notiz: str = "") -> dict:
+def create_leads(root: Path, run: dict, which, today: date, *, website: str = "", notiz: str = "", schwaeche: str = "") -> dict:
     if which == "auto":
         targets = [c for c in run["kandidaten"]
                    if c["status"] == "keine_website" and not c["lead_angelegt"]]
     else:
         ids = set(which)
         targets = [c for c in run["kandidaten"] if c["id"] in ids and not c["lead_angelegt"]]
-    # website/notiz stammen aus dem Einzel-Übernahme-Dialog — nur bei genau einem Kandidaten anwenden,
-    # damit ein Bulk-Import sie nicht auf alle Leads schmiert.
+    # website/notiz/schwaeche stammen aus dem Einzel-Übernahme-Dialog — nur bei genau einem Kandidaten
+    # anwenden, damit ein Bulk-Import sie nicht auf alle Leads schmiert.
     single = len(targets) == 1
     angelegt, uebersprungen = [], []
     for c in targets:
         try:
-            slug = leadtool.add_lead(root, c["firma"], schwaeche=schwaeche_fuer_lead(c),
+            # Vom Nutzer gewählte Schwäche-Tags haben Vorrang; sonst automatisch aus dem Discovery-Befund.
+            eff_schwaeche = schwaeche.strip() if (single and schwaeche.strip()) else schwaeche_fuer_lead(c)
+            slug = leadtool.add_lead(root, c["firma"], schwaeche=eff_schwaeche,
                                      adresse=c.get("adresse", ""),
                                      website=(website if single else ""), today=today)
             c["lead_angelegt"] = True

@@ -489,7 +489,8 @@ class CockpitHandler(BaseHTTPRequestHandler):
         run = discotool.load_run(path)
         website = (body.get("website") or "").strip()
         notiz = (body.get("notiz") or "").strip()
-        result = discotool.create_leads(ROOT, run, which, date.today(), website=website, notiz=notiz)
+        schwaeche = (body.get("schwaeche") or "").strip()
+        result = discotool.create_leads(ROOT, run, which, date.today(), website=website, notiz=notiz, schwaeche=schwaeche)
         discotool.save_run(path, run)
         self._send_json(result)
 
