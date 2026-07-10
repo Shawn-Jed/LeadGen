@@ -685,8 +685,10 @@ function renderRunDetail() {
   const file = App.activeRunFile;
   const cf = App.candFilter;
   const kand = run.kandidaten || [];
-  const aktiv = kand.filter(c => c.status !== "abgelehnt");
+  // Übernommene Leads (lead_angelegt) leben ab jetzt in der Pipeline → in Discovery ausblenden.
   const abgelehnt = kand.filter(c => c.status === "abgelehnt");
+  const uebernommen = kand.filter(c => c.lead_angelegt && c.status !== "abgelehnt");
+  const offen = kand.filter(c => c.status !== "abgelehnt" && !c.lead_angelegt);
 
   const rejectedToggle = abgelehnt.length
     ? `<button class="btn btn-ghost btn-sm" id="toggle-rejected">${
@@ -697,7 +699,8 @@ function renderRunDetail() {
     <div class="run-detail-head">
       <div>
         <h2>${esc(run.branche)} · ${esc(run.stadtteil)}</h2>
-        <div class="rh-sub">${fmtDate(run.erstellt)} · ${aktiv.length} Kandidaten${
+        <div class="rh-sub">${fmtDate(run.erstellt)} · ${offen.length} offen${
+          uebernommen.length ? ` · ${uebernommen.length} übernommen` : ""}${
           abgelehnt.length ? ` · ${abgelehnt.length} abgelehnt` : ""}</div>
       </div>
     </div>
@@ -720,12 +723,14 @@ function renderRunDetail() {
     <div id="cand-list"></div>`;
 
   const list = document.getElementById("cand-list");
-  const basis = App.showRejected ? [...aktiv, ...abgelehnt] : aktiv;
+  const basis = App.showRejected ? [...offen, ...abgelehnt] : offen;
   const sichtbar = basis.filter(candMatchesFilter);
   if (!sichtbar.length) {
-    list.innerHTML = kand.length
-      ? emptyState("🔍", "Kein Treffer", "Kein Kandidat passt zum Filter. Schwelle senken oder Filter zurücksetzen.")
-      : emptyState("📭", "Keine Kandidaten", "Dieser Lauf enthält keine Einträge.");
+    list.innerHTML = !kand.length
+      ? emptyState("📭", "Keine Kandidaten", "Dieser Lauf enthält keine Einträge.")
+      : (offen.length
+          ? emptyState("🔍", "Kein Treffer", "Kein Kandidat passt zum Filter. Schwelle senken oder Filter zurücksetzen.")
+          : emptyState("✓", "Alle bearbeitet", "Alle Kandidaten dieses Laufs sind übernommen oder abgelehnt."));
   } else {
     sichtbar.forEach(c => list.appendChild(candCard(c, file)));
   }
