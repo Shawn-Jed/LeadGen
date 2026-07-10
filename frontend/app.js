@@ -153,6 +153,9 @@ function candMatchesFilter(c) {
   const f = App.candFilter;
   if ((c.score || 0) < f.minScore) return false;
   if (f.mode === "keine_website") return c.status === "keine_website";
+  if (f.mode === "mit_website")
+    return c.status !== "keine_website"
+      && (c.status === "hat_website" || c.status === "analysiert" || !!c.website || !!c.gefundene_url || !!c.tier2);
   if (f.mode === "veraltet") return !!(c.tier2 && c.tier2.veraltet);
   return true;
 }
@@ -706,6 +709,7 @@ function renderRunDetail() {
       <div class="seg" role="group" aria-label="Kandidaten filtern">
         <button class="seg-btn ${cf.mode === "alle" ? "on" : ""}" data-fmode="alle">Alle</button>
         <button class="seg-btn ${cf.mode === "keine_website" ? "on" : ""}" data-fmode="keine_website">Ohne Website</button>
+        <button class="seg-btn ${cf.mode === "mit_website" ? "on" : ""}" data-fmode="mit_website">Mit Website</button>
         <button class="seg-btn ${cf.mode === "veraltet" ? "on" : ""}" data-fmode="veraltet">Veraltete Website</button>
       </div>
       <label class="score-filter">
