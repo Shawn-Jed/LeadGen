@@ -164,7 +164,8 @@ const App = {
   dragSlug: null,       // Board: aktuell gezogener Lead
   newLeadTags: new Set(),   // Neuer-Lead-Modal: aktuell gewählte Schwäche-Tags
   ueberTags: new Set(),     // Übernahme-Dialog: gewählte Schwäche-Tags (optional, sonst Auto-Schwäche)
-  leadTagFilter: new Set()  // Pipeline: aktive Tag-Filter (OR-Match, leer = alle)
+  leadTagFilter: new Set(),  // Pipeline: aktive Tag-Filter (OR-Match, leer = alle)
+  leadSearch: ""             // Pipeline: Freitext-Suche (Name/Ort/Branche), lowercase
 };
 
 // Prüft, ob ein Kandidat den aktiven Discovery-Filter erfüllt.
@@ -275,6 +276,14 @@ function leadMatchesTagFilter(l) {
   return splitTags(l.schwaeche).some(t => App.leadTagFilter.has(t));
 }
 
+// Lead erfüllt die Freitext-Suche (leer = alle; sonst Teilstring in Name/Ort/Branche/Adresse).
+function leadMatchesSearch(l) {
+  const q = App.leadSearch;
+  if (!q) return true;
+  const haystack = [l.firma, l.ort, l.branche, l.adresse].filter(Boolean).join(" ").toLowerCase();
+  return haystack.includes(q);
+}
+
 function renderKpis() {
   const s = App.state;
   const total = s.leads.length;
@@ -321,7 +330,14 @@ function renderBoard() {
   const order = s.statuses.reihenfolge;
   const byStatus = {};
   order.forEach(st => byStatus[st] = []);
-  s.leads.filter(leadMatchesTagFilter).forEach(l => { (byStatus[l.status] = byStatus[l.status] || []).push(l); });
+  s.leads.filter(l => leadMatchesTagFilter(l) && leadMatchesSearch(l)).forEach(l => { (byStatus[l.status] = byStatus[l.status] || []).push(l); });
+
+  // Suche/Filter aktiv, aber nichts übrig → klarer Leerzustand statt lauter leerer Spalten.
+  const sichtbar = Object.values(byStatus).reduce((n, arr) => n + arr.length, 0);
+  if (!sichtbar && (App.leadSearch || App.leadTagFilter.size)) {
+    board.innerHTML = emptyState("🔍", "Kein Treffer", "Kein Lead passt zu Suche und Filter. Suchbegriff ändern oder Filter zurücksetzen.");
+    return;
+  }
 
   // Spalten ohne Reihenfolge-Eintrag ans Ende
   const cols = order.filter(st => byStatus[st] !== undefined);
@@ -512,10 +528,10 @@ function openDrawer(slug) {
       <div class="field" style="margin-bottom:14px">
         <span>🎨 Prototyp</span>
         <div class="action-row">
-          <button class="btn btn-accent btn-sm" id="act-proto-btn">📋 Prototyp-Prompt kopieren</button>
+          <button class="btn btn-accent btn-sm" id="act-proto-btn">📋 Design-Prompt kopieren</button>
           ${protoUrl ? `<a class="btn btn-ghost btn-sm" href="${esc(protoUrl)}" target="_blank" rel="noopener">Demo öffnen ↗</a>` : ""}
         </div>
-        <div class="field-hint" style="margin-top:6px">Kopiert einen fertigen Auftrag mit allen Lead-Daten — im Claude-Projekt einfügen und Wünsche ergänzen.</div>
+        <div class="field-hint" style="margin-top:6px">Kopiert einen fertigen Prompt mit allen Lead-Daten — in Claude Design einfügen, One-Pager bauen lassen, HTML danach hier einspeisen.</div>
       </div>`;
 
   drawer.innerHTML = `
@@ -1070,30 +1086,41 @@ async function pollOutreach(slug, tries = 0) {
 }
 
 /* Pollt den Prototyp-Zustand bis 'ready', lädt dann State neu und öffnet den Drawer. */
-/* Baut aus dem Lead einen fertigen Prototyp-Auftrag (Prompt) für ein separates Claude-Projekt. */
+/* Baut aus dem Lead einen fertigen Prompt für Claude Design (Artifact-One-Pager). */
 function buildPrototypPrompt(l) {
-  const lines = [];
-  const add = (k, v) => { if (v && String(v).trim()) lines.push(`${k}: ${String(v).trim()}`); };
+  const info = [];
+  const add = (k, v) => { if (v && String(v).trim()) info.push(`${k}: ${String(v).trim()}`); };
   add("Firma", l.firma);
   add("Branche/Ort", [l.branche, l.ort].filter(Boolean).join(" · "));
   add("Adresse", l.adresse);
   add("Aktuelle Website", l.website || "keine");
   add("Google-Eintrag", l.google_eintrag);
-  add("Schwäche(n)", splitTags(l.schwaeche).join(", "));
+  add("Konkrete Schwäche(n), die die neue Seite besser lösen muss", splitTags(l.schwaeche).join(", "));
   const notizen = (Array.isArray(l.notizen) && l.notizen.length) ? l.notizen.join(" | ") : (l.notiz || "");
   add("Notiz", notizen);
   add("UCP", l.ucp);
   return [
-    `Baue einen Prototyp (Demo-One-Pager) für: ${l.firma || l.slug}`,
+    `Baue mir eine einseitige Website (One-Pager) als Artifact — modern, hochwertig und mit eigenständiger Handschrift — für diesen echten Betrieb aus Hamburg: ${l.firma || l.slug}`,
     "",
-    ...lines,
+    "Betrieb:",
+    ...info.map(x => `- ${x}`),
     "",
-    "Ziel: Eine moderne, self-contained One-Pager-HTML (CSS/JS inline, kein externes CDN/Font/Script),",
-    "die genau die genannte(n) Schwäche(n) behebt. Branche/Ort spiegeln, plausible Leistungen, klarer CTA.",
-    "Keine erfundenen Fakten über den Betrieb hinaus (keine erfundenen Preise, Bewertungen, Adressen).",
+    "Auftrag:",
+    "- Zielgruppe sind lokale Kund*innen dieses Betriebs. Die Seite muss die genannte(n) Schwäche(n) sichtbar besser lösen als der Status quo.",
+    "- Design: klare, eigenständige Gestaltung statt generischem Template-Look — zur Branche und zum Ort passend. Durchdachtes Farb- und Typo-System, großzügiges Layout, ein klarer Call-to-Action (Termin/Anruf/Kontakt).",
+    "- Sinnvolle Sektionen zur Branche wählen (z. B. Hero, Leistungen, Über uns, Öffnungszeiten/Anfahrt, Kontakt/CTA).",
+    "- Mobile-first responsive, kein horizontaler Scroll, funktioniert von 320px bis Desktop.",
     "",
-    "Zusätzliche Wünsche zum Prototyp:",
-    "- "
+    "Technische Vorgaben (wichtig — sonst lädt das Artifact nicht und lässt sich nicht live schalten):",
+    "- Ein einzelnes, komplett self-contained HTML-Dokument, CSS und JS inline.",
+    "- Keine externen Ressourcen: keine CDN-Skripte, keine externen Fonts/Stylesheets, keine remote Bilder. System-Font-Stack nutzen.",
+    "- Bilder nur als Inline-SVG, CSS-Gradients/-Muster oder data:-URI — keine echten Fotos verlinken.",
+    "",
+    "Inhaltsregeln:",
+    "- Keine erfundenen Fakten über den Betrieb hinaus: keine erfundenen Preise, Bewertungen, Zahlen oder Adressen. Nur die oben gegebenen Angaben verwenden.",
+    "- Wo echte Inhalte fehlen, neutrale und klar als Platzhalter erkennbare Texte einsetzen.",
+    "",
+    "Ergebnis: ein einzelnes HTML-Artifact, das ich direkt live schalten kann."
   ].join("\n");
 }
 
@@ -1104,7 +1131,7 @@ async function copyPrototypPrompt(slug) {
   const text = buildPrototypPrompt(l);
   try {
     await navigator.clipboard.writeText(text);
-    toast("Prototyp-Prompt kopiert — im Claude-Projekt einfügen", "ok");
+    toast("Design-Prompt kopiert — in Claude Design einfügen", "ok");
   } catch (e) {
     showCopyFallback(text);
   }
@@ -1115,7 +1142,7 @@ function showCopyFallback(text) {
   const host = getOutreachScrim();
   host.innerHTML = `
     <div class="modal modal-wide" role="dialog" aria-modal="true">
-      <h2 class="modal-title">Prototyp-Prompt kopieren</h2>
+      <h2 class="modal-title">Design-Prompt kopieren</h2>
       <p class="wm-hint">Automatisches Kopieren wurde blockiert — Text ist markiert, mit Strg+C kopieren.</p>
       <textarea id="copy-fallback-ta" rows="16" style="width:100%">${esc(text)}</textarea>
       <div class="modal-actions"><button class="btn btn-accent" id="copy-fallback-close">Schließen</button></div>
@@ -1205,6 +1232,17 @@ function switchView(view) {
 
 function init() {
   document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => switchView(t.dataset.view)));
+  const searchInput = document.getElementById("lead-search");
+  const searchClear = document.getElementById("lead-search-clear");
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      App.leadSearch = searchInput.value.trim().toLowerCase();
+      if (searchClear) searchClear.hidden = !searchInput.value;
+      renderBoard();
+    });
+    searchInput.addEventListener("keydown", e => { if (e.key === "Escape") { searchInput.value = ""; searchInput.dispatchEvent(new Event("input")); } });
+  }
+  if (searchClear) searchClear.addEventListener("click", () => { searchInput.value = ""; searchInput.dispatchEvent(new Event("input")); searchInput.focus(); });
   document.getElementById("btn-new-lead").addEventListener("click", openModal);
   document.getElementById("modal-cancel").addEventListener("click", closeModal);
   document.getElementById("new-lead-form").addEventListener("submit", submitNewLead);

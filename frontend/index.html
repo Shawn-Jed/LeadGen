@@ -49,6 +49,11 @@
 
   <main>
     <section id="view-pipeline" class="view is-active">
+      <div class="lead-search">
+        <span class="lead-search-icon" aria-hidden="true">🔍</span>
+        <input type="search" id="lead-search" placeholder="Lead suchen — Name, Ort, Branche…" autocomplete="off" aria-label="Leads durchsuchen">
+        <button type="button" class="lead-search-clear" id="lead-search-clear" hidden aria-label="Suche zurücksetzen">×</button>
+      </div>
       <div class="tagbar" id="lead-tagbar" hidden></div>
       <div class="board" id="board"></div>
     </section>
