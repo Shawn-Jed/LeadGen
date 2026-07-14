@@ -6,8 +6,8 @@ Eine Zeile pro Lead. Warme Leads (ab `in_klaerung`) wandern nach `leads/<slug>.m
 |---|---|---|---|---|---|---|---|---|
 | zahnarztpraxis-dr-behrens | Zahnarztpraxis Dr. Behrens | — | — | kontaktiert | keine auffindbare Website | 2026-06-30 | — | — |
 | tischlerei-norddeich | Tischlerei Norddeich | — | — | identifiziert | kein HTTPS; kein Impressum | — | — | — |
-| style-of-hair | Style of Hair | Fuhlsbüttler Straße 175, 22307 Hamburg | — | identifiziert | keine auffindbare Website | — | — | — |
-| salon-48 | Salon 48 | Fuhlsbüttler Straße 181, 22307 Hamburg | — | identifiziert | keine auffindbare Website | — | — | — |
+| style-of-hair | Style of Hair | Fuhlsbüttler Straße 175, 22307 Hamburg | — | inaktiv | keine auffindbare Website | — | — | 2026-07-10: Inaktiv: keine website mach ich noch nicht |
+| salon-48 | Salon 48 | Fuhlsbüttler Straße 181, 22307 Hamburg | — | identifiziert | keine auffindbare Website | — | — | 2026-07-10: Hat website aber alt |
 | station-haar | Station Haar | — | — | identifiziert | keine auffindbare Website | — | — | — |
 | nadine-beaujean | Nadine Beaujean | — | — | identifiziert | keine auffindbare Website | — | — | — |
 | haarmonie | Haarmonie | Fuhlsbüttler Straße 155, 22305 Hamburg | — | identifiziert | keine auffindbare Website | — | — | — |
@@ -47,7 +47,7 @@ Eine Zeile pro Lead. Warme Leads (ab `in_klaerung`) wandern nach `leads/<slug>.m
 | zahnaerztliche-praxis-joern-bender | Zahnärztliche Praxis Jörn Bender | — | — | identifiziert | keine auffindbare Website | — | — | — |
 | zahnarztpraxis-viola-spruth | Zahnarztpraxis Viola Spruth | Fuhlsbüttler Straße 416, 22309 Hamburg | — | identifiziert | keine auffindbare Website | — | — | — |
 | kieferorthopaedie-an-der-fuhle | Kieferorthopädie an der Fuhle | Fuhlsbüttler Straße 92, 22305 Hamburg | — | identifiziert | keine auffindbare Website | — | — | — |
-| minnemann-elektrotechnik | Minnemann Elektrotechnik | Kranichweg 11, 22305 Hamburg | — | identifiziert | keine auffindbare Website | — | — | — |
+| minnemann-elektrotechnik | Minnemann Elektrotechnik | Kranichweg 11, 22305 Hamburg | — | prototyp_erstellt | keine auffindbare Website | — | — | — |
 | urologe-dr-schoenfelder-und-strasser | Urologe Dr. Schönfelder und Straßer | Fuhlsbüttler Straße 182, 22307 Hamburg | — | identifiziert | keine auffindbare Website | — | — | — |
 | nikolaus-behr | Nikolaus Behr | — | — | identifiziert | keine auffindbare Website | — | — | — |
 | heinze-malessa-maenz-siebje | Heinze, Malessa, Mänz-Siebje | Krüsistraße 15, 22305 Hamburg | — | identifiziert | keine auffindbare Website | — | — | — |
@@ -55,3 +55,11 @@ Eine Zeile pro Lead. Warme Leads (ab `in_klaerung`) wandern nach `leads/<slug>.m
 | vitali-triers | Vitali Triers | — | — | identifiziert | keine auffindbare Website | — | — | — |
 | frauenarztpraxis-barmbek | Frauenarztpraxis Barmbek | Fuhlsbüttler Straße 135, 22305 Hamburg | — | identifiziert | keine auffindbare Website | — | — | — |
 | luettliv | LüttLiv | Maurienstraße 19, 22305 Hamburg | — | identifiziert | keine auffindbare Website | — | — | — |
+| angel-extensions | Angel Extensions | Fuhlsbüttler Straße 279, 22307 Hamburg | https://www.angel-extensions.de/ | identifiziert | keine auffindbare Website | — | — | 2026-07-10: Dunkes Design, leere felder, wilkürliche farb wahl, UMfang okay |
+| hansebarbier | Hansebarbier | Elligersweg 3, 22307 Hamburg | http://www.hansebabier.de/ | identifiziert | keine auffindbare Website | — | — | 2026-07-10: 1 seite, willkürliches design, fehlende funktion wie terminvergabe, footer nicht zu sehen |
+| schnittpunkt | Schnittpunkt | Hartzlohplatz 3, 22307 Hamburg | https://www.friseur-schnittpunkt-hamburg.de/ | identifiziert | keine auffindbare Website | — | — | 2026-07-10: altes design, komische kamera fahrten, kunde gebunden im intro zu beginn |
+| haar-scharf | HAAR-SCHARF | — | https://www.haar-scharf.com/salons/ | identifiziert | keine auffindbare Website | — | — | 2026-07-10: Altes design, direkt in auftrag erstellung |
+| orchideen-palast | Orchideen Palast | Fuhlsbüttler Straße 236, 22307 Hamburg | http://www.orchideen-palast.com | identifiziert | keine auffindbare Website | — | — | 2026-07-10: Altes Design nichtmal 16:9 |
+| daddy-pizza | Daddy Pizza | — | https://www.daddypizza.de/ | identifiziert | keine auffindbare Website | — | — | 2026-07-10: altes deisgn |
+| restaurant-alexandros | Restaurant Alexandros | Bramfelder Straße 87a, 22305 Hamburg | https://www.alexandros-restaurant.de | identifiziert | keine auffindbare Website | — | — | 2026-07-10: Altes deisgn, minimalistisch |
+| indian-temple | Indian Temple | Fuhlsbüttler Straße 159, 22305 Hamburg | http://www.indian-temple.de/ | identifiziert | keine auffindbare Website | — | — | 2026-07-10: Altes design |

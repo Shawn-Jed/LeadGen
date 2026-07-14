@@ -11,11 +11,12 @@
       "website": "",
       "telefon": "+49 40 2800024",
       "osm_id": "way/118381068",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://luth-sanitaer.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     }
   ]
 }

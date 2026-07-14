@@ -11,11 +11,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/278487893",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "http://www.salon-uta.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 2,
@@ -25,11 +26,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/483345047",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://haarideen.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 3,
@@ -53,11 +55,12 @@
       "website": "http://www.hairdream-hamburg.de/",
       "telefon": "+49 40 63972719",
       "osm_id": "node/735861760",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 5,
@@ -95,11 +98,12 @@
       "website": "https://www.denizebeauty.com/",
       "telefon": "",
       "osm_id": "node/2428136296",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 8,
@@ -137,11 +141,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/3686175203",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://evinshairlounge.com/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 11,
@@ -169,7 +174,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 13,
@@ -193,11 +198,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/4825838408",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://www.salonjoli.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 15,
@@ -207,11 +213,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/4982573636",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://www.artrak.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 16,
@@ -225,7 +232,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 17,
@@ -235,11 +242,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/5338792896",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://www.inez-friseur.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 18,
@@ -263,11 +271,12 @@
       "website": "http://www.beauty-cut.de/",
       "telefon": "+49 40 65917313",
       "osm_id": "node/5861067129",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 20,
@@ -281,7 +290,7 @@
       "gefundene_url": "https://www.friseur-schnittpunkt-hamburg.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 21,
@@ -309,7 +318,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 23,
@@ -347,11 +356,12 @@
       "website": "https://www.friseur-le-chic.de",
       "telefon": "+49 40 618339",
       "osm_id": "node/7182212541",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 26,
@@ -417,11 +427,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/10911695603",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://glowandbrowbar.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 31,
@@ -431,11 +442,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/11980689164",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://father-barbier.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 32,
@@ -445,11 +457,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/12715726459",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://www.themansmane-barbershop.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 33,

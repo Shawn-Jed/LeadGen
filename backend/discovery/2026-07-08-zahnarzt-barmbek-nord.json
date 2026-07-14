@@ -25,11 +25,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/2525143913",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://www.fuhle102.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 3,
@@ -39,11 +40,12 @@
       "website": "https://www.susannherrmann.de/",
       "telefon": "+49 40 614083",
       "osm_id": "node/2907825841",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 4,
@@ -57,7 +59,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 5,
@@ -71,7 +73,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 6,
@@ -81,11 +83,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/4074862331",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://www.zahnarzt-kurdow.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 7,
@@ -99,7 +102,7 @@
       "gefundene_url": "https://www.zahnarztpraxis-jungkamp-barmbek.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 8,
@@ -113,7 +116,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 9,
@@ -127,7 +130,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 10,
@@ -141,7 +144,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 11,
@@ -151,11 +154,12 @@
       "website": "https://www.drbahr.de",
       "telefon": "+49 40 61 04 44",
       "osm_id": "node/6886264361",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 12,
@@ -169,7 +173,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 13,
@@ -179,11 +183,12 @@
       "website": "https://www.hamburgzahn.de",
       "telefon": "",
       "osm_id": "node/10000027817",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 14,
@@ -193,11 +198,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/10539080934",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://www.tretau.com/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 15,
@@ -221,11 +227,12 @@
       "website": "https://www.zahnarzt-heuer.de/",
       "telefon": "+49 40 6919534",
       "osm_id": "node/12704884105",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     }
   ]
 }

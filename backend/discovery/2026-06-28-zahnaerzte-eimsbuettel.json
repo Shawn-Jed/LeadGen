@@ -23,7 +23,7 @@
       "website": "http://www.zahn-eimsbuettel-marktplatz.de",
       "telefon": "+49 40 4023456",
       "osm_id": "way/1002",
-      "status": "analysiert",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 60,
       "befund": "Tier-2-Mängel: kein HTTPS, nicht mobil, veraltet (2011), kein Kontaktformular",
@@ -39,7 +39,8 @@
       "tier3": {
         "urteil": "Stark veraltetes Layout, keine Mobilansicht, kein Online-Termin — klarer Modernisierungsbedarf.",
         "empfehlung": "lohnt"
-      }
+      },
+      "status_vor_ablehnung": "analysiert"
     },
     {
       "id": 3,
@@ -87,7 +88,7 @@
       "website": "http://zahnzentrum-bismarck.de",
       "telefon": "+49 40 4056789",
       "osm_id": "way/1005",
-      "status": "analysiert",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 45,
       "befund": "Tier-2-Mängel: kein HTTPS, veraltet (2015), kein Impressum",
@@ -103,7 +104,8 @@
       "tier3": {
         "urteil": "Design okay, aber Sicherheits-/Rechtsmängel (kein HTTPS, kein Impressum) — Praxis-Typ nochmal prüfen.",
         "empfehlung": "unklar"
-      }
+      },
+      "status_vor_ablehnung": "analysiert"
     }
   ]
 }

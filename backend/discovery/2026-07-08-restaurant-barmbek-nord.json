@@ -15,7 +15,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 2,
@@ -25,11 +25,12 @@
       "website": "https://trude-hh.de",
       "telefon": "+49 40 20006931",
       "osm_id": "node/261041923",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 3,
@@ -43,7 +44,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 4,
@@ -53,11 +54,12 @@
       "website": "https://www.taverna-kamiros.de/",
       "telefon": "+4940617683",
       "osm_id": "node/278487889",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 5,
@@ -67,11 +69,12 @@
       "website": "https://www.kalliopea.de/",
       "telefon": "+49 40 6310596",
       "osm_id": "node/363390989",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 6,
@@ -85,7 +88,7 @@
       "gefundene_url": "https://www.daddypizza.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 7,
@@ -95,11 +98,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/483342630",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://pho-hanoi-hamburg.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 8,
@@ -137,11 +141,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/692085309",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://www.burgerboss-hamburg.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 11,
@@ -151,11 +156,12 @@
       "website": "",
       "telefon": "+49 172 428 39 09",
       "osm_id": "node/692085317",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://www.restaurantlezzet.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 12,
@@ -183,7 +189,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 14,
@@ -207,11 +213,12 @@
       "website": "https://www.block-house.de/",
       "telefon": "",
       "osm_id": "node/1762228827",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 16,
@@ -221,11 +228,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/2520339753",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://aroma-hamburg.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 17,
@@ -235,11 +243,12 @@
       "website": "https://www.quartier21-gasthaus.de/",
       "telefon": "+49 40 57017180",
       "osm_id": "node/2867190188",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 18,
@@ -249,11 +258,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/2981804757",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://www.shamandar.de/",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 19,
@@ -267,7 +277,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 20,

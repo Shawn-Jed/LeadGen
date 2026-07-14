@@ -11,11 +11,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/277790181",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://www.dr-engelder.de",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 2,
@@ -53,11 +54,12 @@
       "website": "https://www.hausarztbarmbek.de/",
       "telefon": "",
       "osm_id": "node/3610209693",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 5,
@@ -67,11 +69,12 @@
       "website": "",
       "telefon": "+49 40 616563",
       "osm_id": "node/3893982171",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://www.chirurgie-am-wasserturm.de",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 6,
@@ -85,7 +88,7 @@
       "gefundene_url": "https://die-urologen.net",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 7,
@@ -95,11 +98,12 @@
       "website": "https://www.hno-praxis-barmbek.de/",
       "telefon": "+49 40 697070-0",
       "osm_id": "node/3896957807",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 8,
@@ -109,11 +113,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/4100010965",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://www.hausarztpraxisbarmbek.com",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 9,
@@ -137,11 +142,12 @@
       "website": "http://www.hausarzt-barmbek.de",
       "telefon": "",
       "osm_id": "node/4608334149",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 11,
@@ -155,7 +161,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 12,
@@ -165,11 +171,12 @@
       "website": "https://www.augen-barmbek.de/",
       "telefon": "+49 40 89 72 17 17",
       "osm_id": "node/5036951921",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 13,
@@ -183,7 +190,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 14,
@@ -211,7 +218,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 16,
@@ -249,11 +256,12 @@
       "website": "https://miamedes.de/praxis/hausarztpraxis-barmbek/",
       "telefon": "",
       "osm_id": "node/10110810200",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 19,
@@ -309,7 +317,7 @@
       "gefundene_url": "https://www.hausarzttriers.de",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 23,
@@ -319,11 +327,12 @@
       "website": "https://mkg-barmbek.de/",
       "telefon": "+49 40 881650300",
       "osm_id": "node/12416674087",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 24,
@@ -333,11 +342,12 @@
       "website": "",
       "telefon": "",
       "osm_id": "node/12704859497",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "https://www.hno-barmbek.de",
       "score": 60,
       "befund": "kein website-Tag in OSM",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 25,
@@ -351,7 +361,7 @@
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": true
     },
     {
       "id": 26,
@@ -361,11 +371,12 @@
       "website": "https://www.avimedical.com/praxis/hamburg-barmbek",
       "telefon": "+49 40 53798752 0",
       "osm_id": "node/12704859949",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 27,
@@ -375,11 +386,12 @@
       "website": "https://dermatologie-barmbek.de/",
       "telefon": "+49 40 6901362",
       "osm_id": "node/12704859950",
-      "status": "hat_website",
+      "status": "abgelehnt",
       "gefundene_url": "",
       "score": 0,
       "befund": "Website in OSM hinterlegt",
-      "lead_angelegt": false
+      "lead_angelegt": false,
+      "status_vor_ablehnung": "hat_website"
     },
     {
       "id": 28,
