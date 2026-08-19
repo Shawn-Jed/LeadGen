@@ -1,0 +1,63 @@
+{
+  "branche": "Pflegedienst",
+  "stadtteil": "Ohlsdorf",
+  "erstellt": "2026-08-14",
+  "kandidaten": [
+    {
+      "id": 1,
+      "firma": "tagewerk.fuhle",
+      "adresse": "",
+      "google_url": "https://www.google.com/maps/search/?api=1&query=tagewerk.fuhle+Hamburg",
+      "website": "",
+      "telefon": "",
+      "osm_id": "node/10584339941",
+      "status": "website_unklar",
+      "gefundene_url": "",
+      "score": 60,
+      "befund": "kein website-Tag in OSM",
+      "lead_angelegt": false
+    },
+    {
+      "id": 2,
+      "firma": "Haus Alstertal",
+      "adresse": "Wellingsbütteler Landstraße 217-221, 22337 Hamburg",
+      "google_url": "https://www.google.com/maps/search/?api=1&query=Haus+Alstertal+Wellingsb%C3%BCtteler+Landstra%C3%9Fe+217-221%2C+22337+Hamburg",
+      "website": "https://www.haus-alstertal.de/",
+      "telefon": "+49 40 50715-0",
+      "osm_id": "way/150876980",
+      "status": "hat_website",
+      "gefundene_url": "",
+      "score": 0,
+      "befund": "Website in OSM hinterlegt",
+      "lead_angelegt": false
+    },
+    {
+      "id": 3,
+      "firma": "Wohnunterkunft Große Horst (Am Anzuchtgarten)",
+      "adresse": "Große Horst 2, 22337 Hamburg",
+      "google_url": "https://www.google.com/maps/search/?api=1&query=Wohnunterkunft+Gro%C3%9Fe+Horst+%28Am+Anzuchtgarten%29+Gro%C3%9Fe+Horst+2%2C+22337+Hamburg",
+      "website": "https://www.foerdernundwohnen.de/unternehmen/standorte/",
+      "telefon": "+49 40 731159105",
+      "osm_id": "way/544752859",
+      "status": "hat_website",
+      "gefundene_url": "",
+      "score": 0,
+      "befund": "Website in OSM hinterlegt",
+      "lead_angelegt": false
+    },
+    {
+      "id": 4,
+      "firma": "Servicewohnanlage Am Weißenberge",
+      "adresse": "Am Weißenberge 12, 22335 Hamburg",
+      "google_url": "https://www.google.com/maps/search/?api=1&query=Servicewohnanlage+Am+Wei%C3%9Fenberge+Am+Wei%C3%9Fenberge+12%2C+22335+Hamburg",
+      "website": "https://www.awo-pflegeteam-hamburg.de/servicewohnen/",
+      "telefon": "",
+      "osm_id": "way/686260228",
+      "status": "hat_website",
+      "gefundene_url": "",
+      "score": 0,
+      "befund": "Website in OSM hinterlegt",
+      "lead_angelegt": false
+    }
+  ]
+}

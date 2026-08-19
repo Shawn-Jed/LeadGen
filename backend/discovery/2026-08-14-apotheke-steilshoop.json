@@ -1,0 +1,35 @@
+{
+  "branche": "Apotheke",
+  "stadtteil": "Steilshoop",
+  "erstellt": "2026-08-14",
+  "kandidaten": [
+    {
+      "id": 1,
+      "firma": "Askanier-Apotheke",
+      "adresse": "Gründgensstraße 26, 22309 Hamburg",
+      "google_url": "https://www.google.com/maps/search/?api=1&query=Askanier-Apotheke+Gr%C3%BCndgensstra%C3%9Fe+26%2C+22309+Hamburg",
+      "website": "https://www.askanier-apotheke-bramfeld.de/",
+      "telefon": "+49 40 6314748",
+      "osm_id": "node/978789526",
+      "status": "hat_website",
+      "gefundene_url": "",
+      "score": 0,
+      "befund": "Website in OSM hinterlegt",
+      "lead_angelegt": false
+    },
+    {
+      "id": 2,
+      "firma": "Orchideen Apotheke",
+      "adresse": "Schreyerring 41, 22309 Hamburg",
+      "google_url": "https://www.google.com/maps/search/?api=1&query=Orchideen+Apotheke+Schreyerring+41%2C+22309+Hamburg",
+      "website": "https://www.orchideen-apotheke-hamburg.de/#",
+      "telefon": "+49 40 6302600",
+      "osm_id": "node/2594410955",
+      "status": "hat_website",
+      "gefundene_url": "",
+      "score": 0,
+      "befund": "Website in OSM hinterlegt",
+      "lead_angelegt": false
+    }
+  ]
+}

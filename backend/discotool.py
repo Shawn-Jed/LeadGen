@@ -24,6 +24,14 @@ BRANCHE_TAGS: dict[str, list[str]] = {
     "anwalt": ["office=lawyer"], "rechtsanwalt": ["office=lawyer"], "kanzlei": ["office=lawyer"],
     "tischler": ["craft=carpenter"], "schreiner": ["craft=carpenter"],
     "autowerkstatt": ["shop=car_repair"], "kfz": ["shop=car_repair"],
+    # Empfehlungspartner Support-Site (Multiplikatoren mit Senioren-Nähe)
+    "apotheke": ["amenity=pharmacy"], "apotheken": ["amenity=pharmacy"],
+    "pflegedienst": ["healthcare=nurse", "amenity=nursing_home", "amenity=social_facility"],
+    "pflege": ["healthcare=nurse", "amenity=nursing_home", "amenity=social_facility"],
+    "optiker": ["shop=optician"],
+    "hoergeraete": ["shop=hearing_aids"], "hoergeraeteakustiker": ["shop=hearing_aids"],
+    "sanitaetshaus": ["shop=medical_supply"],
+    "seniorentreff": ["amenity=social_facility"], "seniorenbuero": ["amenity=social_facility"],
 }
 
 

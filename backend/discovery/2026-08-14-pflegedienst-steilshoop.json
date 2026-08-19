@@ -1,0 +1,49 @@
+{
+  "branche": "Pflegedienst",
+  "stadtteil": "Steilshoop",
+  "erstellt": "2026-08-14",
+  "kandidaten": [
+    {
+      "id": 1,
+      "firma": "Verein für Jugendpflege Steilshoop e.V.",
+      "adresse": "",
+      "google_url": "https://www.google.com/maps/search/?api=1&query=Verein+f%C3%BCr+Jugendpflege+Steilshoop+e.V.+Hamburg",
+      "website": "https://vfj-steilshoop.de/",
+      "telefon": "",
+      "osm_id": "node/7185517129",
+      "status": "hat_website",
+      "gefundene_url": "",
+      "score": 0,
+      "befund": "Website in OSM hinterlegt",
+      "lead_angelegt": false
+    },
+    {
+      "id": 2,
+      "firma": "Altenwohn- und Pflegeheim St. Gabriel Herbert-Ruppe-Haus",
+      "adresse": "",
+      "google_url": "https://www.google.com/maps/search/?api=1&query=Altenwohn-+und+Pflegeheim+St.+Gabriel+Herbert-Ruppe-Haus+Hamburg",
+      "website": "",
+      "telefon": "",
+      "osm_id": "way/601358735",
+      "status": "website_unklar",
+      "gefundene_url": "",
+      "score": 60,
+      "befund": "kein website-Tag in OSM",
+      "lead_angelegt": false
+    },
+    {
+      "id": 3,
+      "firma": "Straßensozialarbeit Steilshoop",
+      "adresse": "Gropiusring vor 19-20, 22309 Hamburg",
+      "google_url": "https://www.google.com/maps/search/?api=1&query=Stra%C3%9Fensozialarbeit+Steilshoop+Gropiusring+vor+19-20%2C+22309+Hamburg",
+      "website": "",
+      "telefon": "+49 40 6306186",
+      "osm_id": "way/769707089",
+      "status": "website_unklar",
+      "gefundene_url": "",
+      "score": 60,
+      "befund": "kein website-Tag in OSM",
+      "lead_angelegt": false
+    }
+  ]
+}

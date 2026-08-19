@@ -1,0 +1,49 @@
+{
+  "branche": "Apotheke",
+  "stadtteil": "Ohlsdorf",
+  "erstellt": "2026-08-14",
+  "kandidaten": [
+    {
+      "id": 1,
+      "firma": "Kornweg-Apotheke",
+      "adresse": "Stübeheide 153, 22337 Hamburg",
+      "google_url": "https://www.google.com/maps/search/?api=1&query=Kornweg-Apotheke+St%C3%BCbeheide+153%2C+22337+Hamburg",
+      "website": "",
+      "telefon": "+49 40 595866",
+      "osm_id": "node/675950948",
+      "status": "website_unklar",
+      "gefundene_url": "",
+      "score": 60,
+      "befund": "kein website-Tag in OSM",
+      "lead_angelegt": false
+    },
+    {
+      "id": 2,
+      "firma": "Alster-Apotheke",
+      "adresse": "Ratsmühlendamm 17, 22335 Hamburg",
+      "google_url": "https://www.google.com/maps/search/?api=1&query=Alster-Apotheke+Ratsm%C3%BChlendamm+17%2C+22335+Hamburg",
+      "website": "https://www.alster-apotheke.de/",
+      "telefon": "+49 40 501051",
+      "osm_id": "node/747133238",
+      "status": "hat_website",
+      "gefundene_url": "",
+      "score": 0,
+      "befund": "Website in OSM hinterlegt",
+      "lead_angelegt": false
+    },
+    {
+      "id": 3,
+      "firma": "i Plus Apotheke",
+      "adresse": "Eichenlohweg 17, 22309 Hamburg",
+      "google_url": "https://www.google.com/maps/search/?api=1&query=i+Plus+Apotheke+Eichenlohweg+17%2C+22309+Hamburg",
+      "website": "",
+      "telefon": "",
+      "osm_id": "node/2271386385",
+      "status": "website_unklar",
+      "gefundene_url": "",
+      "score": 60,
+      "befund": "kein website-Tag in OSM",
+      "lead_angelegt": false
+    }
+  ]
+}
