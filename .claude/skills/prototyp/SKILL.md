@@ -22,6 +22,10 @@ Backend läuft (`cd backend && python app.py`). Basis-URL `http://127.0.0.1:8723
      sollen distinctive, production-grade wirken — kein generisches „AI-Slop"-Layout. Wähle
      eine klare, zum Betrieb passende Ästhetik (bei Pflege/Gesundheit i.d.R. warm, seriös,
      vertrauenswürdig, hoher Kontrast, große Schrift statt maximalistischem Chaos).
+   - **Qualitätsschleife (Pflicht):** nach dem Bauen `impeccable critique` + gezielter
+     `polish`/`bolder`-Pass gegen die Rubrik in
+     [`docs/superpowers/prototyp-qualitaetsschleife.md`](../../../docs/superpowers/prototyp-qualitaetsschleife.md).
+     Sobald ein Hausstil (`DESIGN.md`) existiert, davon ausgehen statt bei null starten.
    - Adressiert die konkrete `schwaeche` des Betriebs (z.B. kein Mobil-Layout → responsive).
    - Spiegelt Branche/Ort, plausibler Firmenname + Leistungen. Kein erfundener Fakt über den
      Betrieb hinaus (keine erfundenen Preise, Bewertungen, Adressen).
@@ -36,7 +40,9 @@ Backend läuft (`cd backend && python app.py`). Basis-URL `http://127.0.0.1:8723
    zeigt „Entwurf bereit, lokal prüfbar".
 5. **Freigabe + Veröffentlichung (menschliche Einzelentscheidung, kanonische Statusmaschine):**
    `none → pending → draft_ready → approved_local → published` (+ `rework`/`archived`).
-   - `POST …/prototyp/approve` → `approved_local` (nur aus `draft_ready`; „inhaltlich/visuell ok").
+   - `POST …/prototyp/approve` → `approved_local` (nur aus `draft_ready`; erst wenn die
+     Rubrik-Gate der Qualitätsschleife sitzt). Danach Portfolio-Eintrag anlegen
+     (`portfolio.add_entry`) mit `muster` + `lernnotiz` → speist den nächsten Brief (Flywheel).
    - `POST …/prototyp/publish` → deployt nach GitHub Pages + `published` (nur aus `approved_local`).
    - `POST …/prototyp/rework` bzw. `…/archive` für Korrektur bzw. Aussortieren.
    Ein öffentlicher Link entsteht **niemals** aus `pending`/`draft_ready` — nur über den
