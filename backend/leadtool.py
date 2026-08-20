@@ -289,6 +289,181 @@ def set_email(root: Path, slug: str, email: str) -> None:
     write_lead(root, slug, meta, body)
 
 
+# ---------------------------------------------------------------------------
+# W2.1  Prioritätsmodell — reine Funktion, kein Dateizugriff
+# ---------------------------------------------------------------------------
+
+def priority_score(lead: dict, today: date) -> dict:
+    """Berechnet einen erklärenden Prioritäts-Score für einen Lead-dict.
+
+    Gibt zurück: {"score": int, "faktoren": {name: {"wert": int, "erklaerung": str}, …}}
+
+    Faktoren und Gewichte (transparent, kein Gesamtmix ohne Begründung):
+      befundstaerke      0–3   Anzahl konkreter Schwächen
+      segmentpassung     0–3   warm > kalt; warm mit Branche/Ort > ohne
+      datenvollstaendigkeit 0–3  Website + Schwäche + (warm: Email)
+      wiedervorlage_faellig 0–3  fällig heute oder überfällig
+    Gesamt = Summe (max 12).
+    """
+    faktoren: dict = {}
+
+    # --- Befundstärke ---
+    schwaechen = _split_schwaeche(lead.get("schwaeche") or "")
+    n = len(schwaechen)
+    if n == 0:
+        bs_wert = 0
+        bs_erkl = "Keine konkrete Schwäche dokumentiert"
+    elif n == 1:
+        bs_wert = 1
+        bs_erkl = f"1 Schwäche: {schwaechen[0]}"
+    elif n == 2:
+        bs_wert = 2
+        bs_erkl = f"2 Schwächen: {', '.join(schwaechen)}"
+    else:
+        bs_wert = 3
+        bs_erkl = f"{n} Schwächen: {', '.join(schwaechen[:3])}{'…' if n > 3 else ''}"
+    faktoren["befundstaerke"] = {"wert": bs_wert, "erklaerung": bs_erkl}
+
+    # --- Segmentpassung ---
+    warm = lead.get("warm", False)
+    branche = (lead.get("branche") or "").strip()
+    ort = (lead.get("ort") or "").strip()
+    if warm and branche and ort:
+        sp_wert = 3
+        sp_erkl = f"Warmer Lead · Branche: {branche} · Ort: {ort}"
+    elif warm and (branche or ort):
+        sp_wert = 2
+        sp_erkl = f"Warmer Lead · {branche or ort}"
+    elif warm:
+        sp_wert = 2
+        sp_erkl = "Warmer Lead (Branche/Ort noch nicht eingetragen)"
+    elif branche:
+        sp_wert = 1
+        sp_erkl = f"Kalter Lead · Branche: {branche}"
+    else:
+        sp_wert = 0
+        sp_erkl = "Kalter Lead · kein Segment hinterlegt"
+    faktoren["segmentpassung"] = {"wert": sp_wert, "erklaerung": sp_erkl}
+
+    # --- Datenvollständigkeit ---
+    hat_website = bool((lead.get("website") or "").strip())
+    hat_schwaeche = n > 0
+    hat_email = False
+    if warm:
+        kontakt = lead.get("kontakt") or {}
+        hat_email = bool((kontakt.get("email") or "").strip())
+
+    dv_punkte = sum([hat_website, hat_schwaeche, hat_email if warm else hat_website])
+    # Normalisierung: max 3 Punkte
+    # kalt: website(1) + schwaeche(1) + website nochmal nicht sinnvoll → max 2 → hochskalieren
+    if not warm:
+        dv_wert = min(3, int(round((hat_website + hat_schwaeche) * 1.5)))
+    else:
+        dv_wert = sum([hat_website, hat_schwaeche, hat_email])
+
+    fehlend = []
+    if not hat_website:
+        fehlend.append("Website")
+    if not hat_schwaeche:
+        fehlend.append("Schwäche")
+    if warm and not hat_email:
+        fehlend.append("E-Mail")
+    if fehlend:
+        dv_erkl = f"Fehlt: {', '.join(fehlend)}"
+    else:
+        dv_erkl = "Website, Schwäche" + (", E-Mail" if warm else "") + " vorhanden"
+    faktoren["datenvollstaendigkeit"] = {"wert": dv_wert, "erklaerung": dv_erkl}
+
+    # --- Wiedervorlage fällig ---
+    wv_raw = (lead.get("wiedervorlage") or "").strip()
+    wv_wert = 0
+    wv_erkl = "Keine Wiedervorlage gesetzt"
+    if wv_raw:
+        try:
+            wv_date = date.fromisoformat(wv_raw)
+            if wv_date <= today:
+                delta = (today - wv_date).days
+                wv_wert = 3
+                wv_erkl = f"Fällig seit {delta} Tag(en) ({wv_raw})"
+            else:
+                wv_erkl = f"Geplant am {wv_raw} (noch nicht fällig)"
+        except ValueError:
+            wv_erkl = f"Ungültiges Datum: {wv_raw}"
+    faktoren["wiedervorlage_faellig"] = {"wert": wv_wert, "erklaerung": wv_erkl}
+
+    total = sum(f["wert"] for f in faktoren.values())
+    return {"score": total, "faktoren": faktoren}
+
+
+# ---------------------------------------------------------------------------
+# W2.2  Nächste Aktion — reine Funktion, kein Dateizugriff
+# ---------------------------------------------------------------------------
+
+NEXT_ACTION_LABELS = {
+    "pruefen": "Prüfen",
+    "qualifizieren": "Qualifizieren",
+    "demo_beauftragen": "Demo beauftragen",
+    "kontaktieren": "Kontaktieren",
+    "nachfassen": "Nachfassen",
+}
+
+def next_action(lead: dict, today: date) -> str:
+    """Leitet die genau eine nächste empfohlene Aktion aus Status + Daten ab.
+
+    Reihenfolge der Entscheidungsregeln (erste Regel, die greift, gewinnt):
+    1. Wiedervorlage fällig (heute oder überfällig) → nachfassen
+    2. Status keine_antwort oder kontaktiert > 14 Tage → nachfassen
+    3. Warme Status (in_klaerung, termin_vereinbart, angebot_raus, gewonnen) → kontaktieren / nachfassen
+    4. analysiert + Schwäche + Website → demo_beauftragen
+    5. identifiziert/analysiert + Schwäche → qualifizieren
+    6. Alles andere → pruefen
+    """
+    status = lead.get("status", "")
+    schwaechen = _split_schwaeche(lead.get("schwaeche") or "")
+    hat_schwaeche = len(schwaechen) > 0
+    hat_website = bool((lead.get("website") or "").strip())
+
+    # Regel 1: Wiedervorlage fällig
+    wv_raw = (lead.get("wiedervorlage") or "").strip()
+    if wv_raw:
+        try:
+            wv_date = date.fromisoformat(wv_raw)
+            if wv_date <= today:
+                return "nachfassen"
+        except ValueError:
+            pass
+
+    # Regel 2: Keine Antwort / lange kein Kontakt
+    if status == "keine_antwort":
+        return "nachfassen"
+    if status == "kontaktiert":
+        kontaktiert_raw = (lead.get("kontaktiert_am") or "").strip()
+        if kontaktiert_raw:
+            try:
+                k_date = date.fromisoformat(kontaktiert_raw)
+                if (today - k_date).days > NO_ANSWER_DAYS:
+                    return "nachfassen"
+            except ValueError:
+                pass
+
+    # Regel 3: Warme Endzustände / Fortschritts-Status
+    if status in ("termin_vereinbart", "angebot_raus", "gewonnen"):
+        return "nachfassen"
+    if status in WARM_STATUSES:
+        return "kontaktieren"
+
+    # Regel 4: analysiert mit Schwäche und Website → Demo beauftragen
+    if status == "analysiert" and hat_schwaeche and hat_website:
+        return "demo_beauftragen"
+
+    # Regel 5: Identifiziert oder analysiert mit Schwäche → qualifizieren
+    if status in ("identifiziert", "analysiert") and hat_schwaeche:
+        return "qualifizieren"
+
+    # Fallback
+    return "pruefen"
+
+
 def mark_contacted(root: Path, slug: str, *, betreff: str, today: date) -> None:
     """Nach Mailversand: kontaktiert_am stempeln (falls leer) + Historie-Zeile anhängen.
 

@@ -154,6 +154,10 @@ def build_state(today: date) -> dict:
             {"status": ps["status"], "url": ps.get("url")} if ps
             else {"status": "none", "url": None}
         )
+        # W2.1 + W2.2: Priorität und nächste Aktion berechnen und einbetten
+        prio = leadtool.priority_score(lead, today)
+        lead["priority"] = prio
+        lead["next_action"] = leadtool.next_action(lead, today)
 
     rep = leadtool.report(ROOT, today=today)
 
