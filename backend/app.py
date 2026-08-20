@@ -312,6 +312,32 @@ class CockpitHandler(BaseHTTPRequestHandler):
                 state = outreach.load(ROOT, slug) or {"slug": slug, "status": "none", "draft": None}
                 self._send_json(state)
                 return
+            m = re.fullmatch(r"/api/leads/([^/]+)/outreach/readiness", path)
+            if m:
+                slug = _valid_slug(m.group(1))
+                try:
+                    meta, _ = leadtool.read_lead(ROOT, slug)
+                except FileNotFoundError:
+                    meta = {}
+                ps_data = outreach.load(ROOT, slug)
+                # prototyp_state aus build_state-Kontext: ggf. aus prototyp-Store lesen
+                try:
+                    import prototyp as _prototyp
+                    ps = _prototyp.load(ROOT, slug) or {"status": "none", "url": None}
+                except Exception:
+                    ps = {"status": "none", "url": None}
+                lead_ctx = {
+                    "warm": meta.get("warm", False),
+                    "kalt_freigegeben": meta.get("kalt_freigegeben", False),
+                    "kontakt": meta.get("kontakt") or {},
+                    "anlass": meta.get("schwaeche") or meta.get("anlass") or "",
+                    "angebot": meta.get("ucp") or meta.get("angebot") or "",
+                    "nutzen": meta.get("roi_these") or meta.get("nutzen") or "",
+                    "cta": meta.get("cta") or "",
+                    "prototyp_state": ps,
+                }
+                self._send_json(outreach.outreach_readiness(lead_ctx))
+                return
             if path.startswith("/api/"):
                 self._send_error_json(404, f"Unbekannte Route: {path}")
                 return
@@ -537,13 +563,10 @@ class CockpitHandler(BaseHTTPRequestHandler):
 
     def _handle_outreach_send(self, slug: str, body: dict) -> None:
         import base64
-        state = outreach.load(ROOT, slug)
-        if state is None or not state.get("draft"):
-            raise ValueError("Kein fertiger Entwurf zum Senden")
-        meta, _ = leadtool.read_lead(ROOT, slug)  # FileNotFoundError bei kaltem Lead
+        # validate_send prüft: Entwurf vorhanden, nicht already sent, E-Mail vorhanden
+        state = outreach.validate_send(ROOT, slug)
+        meta, _ = leadtool.read_lead(ROOT, slug)
         to_addr = (meta.get("kontakt") or {}).get("email") or ""
-        if not to_addr:
-            raise ValueError("Lead hat keine E-Mail-Adresse")
         draft = state["draft"]
         req = state.get("request") or {}
         attachment = None
@@ -560,10 +583,13 @@ class CockpitHandler(BaseHTTPRequestHandler):
                                    subject=draft["betreff"], body=draft["text"],
                                    attachment=attachment)
         eml_path = (ROOT / "outreach" / f"{slug}.eml")
-        result = mailer.deliver(msg, mode=config.send_mode(), cfg=cfg, eml_path=eml_path)
+        # W4.3: 'direct' nur bei expliziter Auswahl im Body; sonst immer 'draft'
+        requested_mode = (body.get("send_mode") or "").strip().lower()
+        mode = "direct" if requested_mode == "direct" else config.send_mode()
+        result = mailer.deliver(msg, mode=mode, cfg=cfg, eml_path=eml_path)
         outreach.mark_sent(ROOT, slug)
         leadtool.mark_contacted(ROOT, slug, betreff=draft["betreff"], today=date.today())
-        self._send_json({"ok": True, **result})
+        self._send_json({"ok": True, "send_mode": mode, **result})
 
     def _handle_prototyp_request(self, slug: str, body: dict) -> None:
         data = prototyp.save_request(ROOT, slug, today=date.today())

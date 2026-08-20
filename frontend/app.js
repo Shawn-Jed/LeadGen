@@ -488,10 +488,15 @@ function openDrawer(slug) {
   const warm = l.warm === true;
   const email = (l.kontakt && l.kontakt.email) || "";
   const missing = warm ? missingInfo(l) : [];
+  const readyToSend = warm && outreachReadinessOk(l);
+  const btnDisabledAttr = readyToSend ? "" :
+    `disabled title="${missing.length ? esc(missing[0]) : 'Lead erst qualifizieren'}"`;
   const outreachBlock = warm ? `
       <div class="whatsmissing">
-        <span class="wm-label">Was fehlt</span>
-        ${missing.length ? missing.map(m => `<span class="wm-chip">${esc(m)}</span>`).join("") : `<span class="wm-ok">vollständig</span>`}
+        <span class="wm-label">Kontakt-Readiness</span>
+        ${missing.length
+          ? missing.map(m => `<span class="wm-chip">${esc(m)}</span>`).join("")
+          : `<span class="wm-ok">vollständig — bereit zum Anschreiben</span>`}
       </div>
       <div class="field" style="margin-bottom:14px">
         <span>E-Mail</span>
@@ -501,7 +506,7 @@ function openDrawer(slug) {
         </div>
       </div>
       <div class="field" style="margin-bottom:14px">
-        <button class="btn btn-accent" id="act-outreach-btn" ${email ? "" : "disabled title='E-Mail zuerst eintragen'"}>✉ Lead anschreiben</button>
+        <button class="btn btn-accent" id="act-outreach-btn" ${btnDisabledAttr}>Anschreiben vorbereiten</button>
       </div>` : `
       <div class="whatsmissing">
         <span class="wm-label">Anschreiben</span>
@@ -1098,7 +1103,8 @@ function openOutreach(slug) {
   const l = App.state.leads.find(x => x.slug === slug);
   if (!l) return;
   const pstate = l.prototyp_state || {};
-  const protoUrl = pstate.status === "ready" ? (pstate.url || "") : (l.prototyp || "");
+  // W4.2: Demo-Link nur bei published — draft_ready/approved_local zählt nicht
+  const protoUrl = pstate.status === "published" ? (pstate.url || "") : "";
   const linkSel = protoUrl ? " selected" : "";
   const keinerSel = protoUrl ? "" : " selected";
   const host = getOutreachScrim();
@@ -1240,6 +1246,9 @@ function showCopyFallback(text) {
 function showOutreachPreview(slug, draft) {
   const l = App.state.leads.find(x => x.slug === slug) || {};
   const to = (l.kontakt && l.kontakt.email) || "";
+  // Demo-Link nur wenn published
+  const ps = l.prototyp_state || {};
+  const demoLink = ps.status === "published" && ps.url ? ps.url : (draft.demo_link || "");
   const host = getOutreachScrim();
   host.innerHTML = `
     <div class="modal modal-wide" role="dialog" aria-modal="true">
@@ -1247,22 +1256,34 @@ function showOutreachPreview(slug, draft) {
       <div class="mail-preview">
         <div class="mp-row"><span>An</span><b>${esc(to)}</b></div>
         <div class="mp-row"><span>Betreff</span><b>${esc(draft.betreff)}</b></div>
+        ${demoLink ? `<div class="mp-row"><span>Demo-Link</span><a href="${esc(demoLink)}" target="_blank" rel="noopener">${esc(demoLink)}</a></div>` : ""}
         <pre class="mp-body">${esc(draft.text)}</pre>
       </div>
+      <label class="field" style="margin:10px 0 4px">
+        <span>Sendemodus</span>
+        <select id="prev-send-mode">
+          <option value="draft" selected>Entwurf (.eml ablegen) — Standard</option>
+          <option value="direct">Direkt senden (SMTP)</option>
+        </select>
+      </label>
+      <p class="wm-hint" style="margin-bottom:10px">
+        Direkt senden nur nach bewusster Auswahl. Standard legt die Mail als .eml-Datei ab.
+      </p>
       <p class="form-error" id="outreach-send-error" hidden></p>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" id="prev-cancel">Abbrechen</button>
-        <button type="button" class="btn btn-accent" id="prev-send">Ja, senden</button>
+        <button type="button" class="btn btn-accent" id="prev-send">Freigeben &amp; ausführen</button>
       </div>
     </div>`;
   host.hidden = false;
   document.getElementById("prev-cancel").onclick = () => { host.hidden = true; host.innerHTML = ""; };
   document.getElementById("prev-send").onclick = async () => {
     const err = document.getElementById("outreach-send-error");
+    const sendMode = document.getElementById("prev-send-mode").value;
     try {
-      const res = await post(`/api/leads/${slug}/outreach/send`, {});
+      const res = await post(`/api/leads/${slug}/outreach/send`, { send_mode: sendMode });
       host.hidden = true; host.innerHTML = "";
-      toast(res.mode === "direct" ? "Mail gesendet" : "Entwurf (.eml) abgelegt", "ok");
+      toast(res.send_mode === "direct" ? "Mail gesendet (SMTP)" : "Entwurf (.eml) abgelegt", "ok");
       await loadState();
     } catch (e) { err.textContent = e.message || "Sendefehler"; err.hidden = false; }
   };
@@ -1431,12 +1452,21 @@ function renderFokus() {
 
 /* Liste fehlender Pflichtinfos eines warmen Leads (für den "Was fehlt"-Block). */
 function missingInfo(l) {
+  // W4.1: Readiness-Pflichtpunkte spiegeln outreach_readiness() im Backend.
+  // Informationelle Fehlpunkte (Website, Prototyp) bleiben als Hinweise erhalten.
   const miss = [];
-  if (!l.kontakt || !l.kontakt.email) miss.push("E-Mail");
-  if (!l.website) miss.push("Website");
-  if (!l.prototyp) miss.push("Prototyp");
-  if (!l.ucp) miss.push("Angebot (UCP)");
+  if (!l.kontakt || !l.kontakt.email) miss.push("E-Mail fehlt");
+  if (!l.schwaeche && !l.anlass) miss.push("Anlass fehlt (Schwäche/Befund)");
+  if (!l.ucp && !l.angebot) miss.push("Angebot fehlt (UCP)");
+  if (!l.roi_these && !l.nutzen) miss.push("Nutzen fehlt (ROI-These)");
+  if (!l.cta) miss.push("CTA fehlt");
   return miss;
+}
+
+function outreachReadinessOk(l) {
+  // Kurzprüfung ob alle Pflichtpunkte erfüllt sind (spiegelt Backend outreach_readiness).
+  if (!l.warm && !l.kalt_freigegeben) return false;
+  return missingInfo(l).length === 0;
 }
 
 function esc(s) {
