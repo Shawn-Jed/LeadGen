@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "frontend/style.css"
+        ],
+        "createdAt": "2026-08-20T05:30:03.095Z",
+        "reason": "user confirmed: impeccable-Scope = nur Demo-One-Pager (PRODUCT.md/init); Cockpit-Stylesheet ausgenommen. .card.warm/.note-item/.run-card.is-active sind funktionale Status-Affordances im internen Tool."
+      }
+    ]
+  }
+}
