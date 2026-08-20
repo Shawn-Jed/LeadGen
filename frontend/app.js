@@ -544,15 +544,50 @@ function openDrawer(slug) {
   }
 
   const ps = l.prototyp_state || { status: "none", url: null };
-  const protoUrl = (ps.status === "ready" && ps.url) ? ps.url : (l.prototyp || "");
+  // URL nur anzeigen wenn tatsächlich published
+  const protoUrl = (ps.status === "published" && ps.url) ? ps.url : "";
+  // Status-Label für Cockpit-Anzeige
+  const PROTO_STATUS_LABEL = {
+    none: "Kein Auftrag",
+    pending: "Auftrag offen",
+    draft_ready: "Entwurf lokal bereit",
+    approved_local: "Lokal freigegeben",
+    published: "Veröffentlicht",
+    rework: "Überarbeitung nötig",
+    archived: "Archiviert",
+  };
+  const protoStatusLabel = PROTO_STATUS_LABEL[ps.status] || ps.status;
+  // Aktions-Buttons je nach aktuellem Status
+  const protoActionBtns = (() => {
+    const s = ps.status;
+    const btns = [];
+    // Manuelle Fallback: Design-Prompt kopieren (immer sichtbar, markiert als manuell)
+    btns.push(`<button class="btn btn-ghost btn-sm" id="act-proto-copy-btn" title="Manueller Fallback: Prompt in Claude Design einfügen, HTML zurück per Auftrag einspeisen">📋 Design-Prompt (manuell)</button>`);
+    if (s === "none" || s === "rework") {
+      btns.push(`<button class="btn btn-accent btn-sm" id="act-proto-request-btn">Auftrag anlegen</button>`);
+    }
+    if (s === "draft_ready") {
+      btns.push(`<button class="btn btn-accent btn-sm" id="act-proto-approve-btn">Lokal freigeben</button>`);
+      btns.push(`<button class="btn btn-ghost btn-sm" id="act-proto-rework-btn">Überarbeitung</button>`);
+    }
+    if (s === "approved_local") {
+      btns.push(`<button class="btn btn-accent btn-sm" id="act-proto-publish-btn">Oeffentlichen Link erstellen</button>`);
+    }
+    if (protoUrl) {
+      btns.push(`<a class="btn btn-ghost btn-sm" href="${esc(protoUrl)}" target="_blank" rel="noopener">Demo öffnen ↗</a>`);
+    }
+    if (s !== "none" && s !== "archived") {
+      btns.push(`<button class="btn btn-ghost btn-sm" id="act-proto-archive-btn">Archivieren</button>`);
+    }
+    return btns.join(" ");
+  })();
   const prototypBlock = `
       <div class="field" style="margin-bottom:14px">
-        <span>🎨 Prototyp</span>
-        <div class="action-row">
-          <button class="btn btn-accent btn-sm" id="act-proto-btn">📋 Design-Prompt kopieren</button>
-          ${protoUrl ? `<a class="btn btn-ghost btn-sm" href="${esc(protoUrl)}" target="_blank" rel="noopener">Demo öffnen ↗</a>` : ""}
+        <span>Prototyp <small style="font-weight:normal;opacity:.7">${esc(protoStatusLabel)}</small></span>
+        <div class="action-row" style="flex-wrap:wrap;gap:6px">
+          ${protoActionBtns}
         </div>
-        <div class="field-hint" style="margin-top:6px">Kopiert einen fertigen Prompt mit allen Lead-Daten — in Claude Design einfügen, One-Pager bauen lassen, HTML danach hier einspeisen.</div>
+        ${ps.status === "none" ? `<div class="field-hint" style="margin-top:6px">Auftrag anlegen → HTML aus Claude Design einspeisen → lokal prüfen → freigeben.</div>` : ""}
       </div>`;
 
   drawer.innerHTML = `
@@ -655,8 +690,35 @@ function openDrawer(slug) {
   };
   const outreachBtn = document.getElementById("act-outreach-btn");
   if (outreachBtn) outreachBtn.onclick = () => openOutreach(slug);
-  const protoBtn = document.getElementById("act-proto-btn");
-  if (protoBtn) protoBtn.onclick = () => copyPrototypPrompt(slug);
+  // Prototyp-Buttons
+  const protoCopyBtn = document.getElementById("act-proto-copy-btn");
+  if (protoCopyBtn) protoCopyBtn.onclick = () => copyPrototypPrompt(slug);
+
+  const protoRequestBtn = document.getElementById("act-proto-request-btn");
+  if (protoRequestBtn) protoRequestBtn.onclick = async () => {
+    await doAction(() => post(`/api/leads/${slug}/prototyp/request`, {}), "Prototyp-Auftrag angelegt");
+  };
+
+  const protoApproveBtn = document.getElementById("act-proto-approve-btn");
+  if (protoApproveBtn) protoApproveBtn.onclick = async () => {
+    await doAction(() => post(`/api/leads/${slug}/prototyp/approve`, {}), "Lokal freigegeben");
+  };
+
+  const protoReworkBtn = document.getElementById("act-proto-rework-btn");
+  if (protoReworkBtn) protoReworkBtn.onclick = async () => {
+    await doAction(() => post(`/api/leads/${slug}/prototyp/rework`, {}), "Zur Überarbeitung markiert");
+  };
+
+  const protoPublishBtn = document.getElementById("act-proto-publish-btn");
+  if (protoPublishBtn) protoPublishBtn.onclick = async () => {
+    if (!confirm("Oeffentlichen Link erstellen? Damit wird die Demo per Git-Push veröffentlicht.")) return;
+    await doAction(() => post(`/api/leads/${slug}/prototyp/publish`, {}), "Demo veröffentlicht");
+  };
+
+  const protoArchiveBtn = document.getElementById("act-proto-archive-btn");
+  if (protoArchiveBtn) protoArchiveBtn.onclick = async () => {
+    await doAction(() => post(`/api/leads/${slug}/prototyp/archive`, {}), "Prototyp archiviert");
+  };
 }
 
 function closeDrawer() {

@@ -382,6 +382,22 @@ class CockpitHandler(BaseHTTPRequestHandler):
             if m:
                 self._handle_prototyp_draft(_valid_slug(m.group(1)), body)
                 return
+            m = re.fullmatch(r"/api/leads/([^/]+)/prototyp/approve", path)
+            if m:
+                self._handle_prototyp_approve(_valid_slug(m.group(1)), body)
+                return
+            m = re.fullmatch(r"/api/leads/([^/]+)/prototyp/publish", path)
+            if m:
+                self._handle_prototyp_publish(_valid_slug(m.group(1)), body)
+                return
+            m = re.fullmatch(r"/api/leads/([^/]+)/prototyp/rework", path)
+            if m:
+                self._handle_prototyp_rework(_valid_slug(m.group(1)), body)
+                return
+            m = re.fullmatch(r"/api/leads/([^/]+)/prototyp/archive", path)
+            if m:
+                self._handle_prototyp_archive(_valid_slug(m.group(1)), body)
+                return
             self._send_error_json(404, f"Unbekannte Route: {path}")
         except ValueError as exc:
             # Duplikat-ValueError als 409, sonst 400
@@ -554,15 +570,38 @@ class CockpitHandler(BaseHTTPRequestHandler):
         self._send_json(data, status=201)
 
     def _handle_prototyp_draft(self, slug: str, body: dict) -> None:
+        """Speichert HTML lokal → draft_ready. Deployt NICHT automatisch."""
         html = body.get("html") or ""
         if "<html" not in html.lower():
             raise ValueError("Feld 'html' fehlt oder ist kein HTML-Dokument")
+        self._send_json(prototyp.save_draft(ROOT, slug, html))
+
+    def _handle_prototyp_approve(self, slug: str, body: dict) -> None:
+        """Setzt Status approved_local (menschliche Freigabe, nur aus draft_ready)."""
+        self._send_json(prototyp.approve_local(ROOT, slug))
+
+    def _handle_prototyp_publish(self, slug: str, body: dict) -> None:
+        """Veröffentlicht die Demo: deploy (injizierbar) + published. Nur bei approved_local."""
+        state = prototyp.load(ROOT, slug)
+        if state is None or state.get("status") != "approved_local":
+            raise ValueError(
+                "Publish erfordert Status 'approved_local'"
+            )
         repo = config.prototyp_repo_path()
         base = config.prototyp_pages_base()
         if not repo or not base:
             raise ValueError("PROTOTYP_REPO_PATH/PROTOTYP_PAGES_BASE nicht gesetzt (.env)")
+        html = state.get("html_local") or ""
         url = deploy.deploy(slug, html, repo_path=Path(repo), pages_base=base)
-        self._send_json(prototyp.mark_ready(ROOT, slug, url))
+        self._send_json(prototyp.mark_published(ROOT, slug, url))
+
+    def _handle_prototyp_rework(self, slug: str, body: dict) -> None:
+        """Markiert Entwurf zur Überarbeitung."""
+        self._send_json(prototyp.mark_rework(ROOT, slug))
+
+    def _handle_prototyp_archive(self, slug: str, body: dict) -> None:
+        """Archiviert den Prototyp-Eintrag."""
+        self._send_json(prototyp.mark_archived(ROOT, slug))
 
     # --- Statisches Ausliefern ---
 

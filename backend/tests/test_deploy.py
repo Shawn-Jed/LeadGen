@@ -1,3 +1,6 @@
+"""Deploy-Tests mit Fake-Pusher (kein echter Git-Push). W3.6."""
+import pytest
+
 import deploy
 
 
@@ -23,3 +26,17 @@ def test_deploy_strips_trailing_slash_from_base(tmp_path):
         pusher=lambda repo, slug: None,
     )
     assert url == "https://shawn-jed.github.io/prototyp/x"
+
+
+def test_deploy_uses_html_local_from_store(tmp_path):
+    """deploy kann HTML aus dem Store-dict lesen (via html_local-Feld)."""
+    html = "<html><body>Test</body></html>"
+    calls = []
+    url = deploy.deploy(
+        "test-slug", html,
+        repo_path=tmp_path,
+        pages_base="https://shawn-jed.github.io/prototyp",
+        pusher=lambda repo, slug: calls.append(slug),
+    )
+    assert url.endswith("/test-slug")
+    assert len(calls) == 1
