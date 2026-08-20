@@ -147,6 +147,22 @@ const STATUS_LABEL = {
 const T3_CLASS = { lohnt: "s-ok", lohnt_nicht: "s-muted", unklar: "s-warn" };
 const T3_LABEL = { lohnt: "Lohnt sich", lohnt_nicht: "Lohnt nicht", unklar: "Unklar" };
 
+// Nächste Aktion: Label + Klasse für Badge
+const NEXT_ACTION_LABEL = {
+  pruefen: "Prüfen",
+  qualifizieren: "Qualifizieren",
+  demo_beauftragen: "Demo beauftragen",
+  kontaktieren: "Kontaktieren",
+  nachfassen: "Nachfassen",
+};
+const NEXT_ACTION_CLASS = {
+  pruefen: "na-pruefen",
+  qualifizieren: "na-qualifizieren",
+  demo_beauftragen: "na-demo",
+  kontaktieren: "na-kontaktieren",
+  nachfassen: "na-nachfassen",
+};
+
 function statusLabel(s) { return STATUS_LABEL[s] || s; }
 
 /* ---------------------------------------------------------------------
@@ -242,6 +258,7 @@ function render() {
   renderKpis();
   renderLeadTagbar();
   renderBoard();
+  renderFokus();
   renderRunList();
 }
 
@@ -435,12 +452,16 @@ function leadCard(l, isDue, isStale) {
   if (l.kontaktiert_am) meta.push(`<span><b>Kontakt:</b> ${fmtDate(l.kontaktiert_am)}</span>`);
   if (l.wiedervorlage) meta.push(`<span><b>WV:</b> ${fmtDate(l.wiedervorlage)}</span>`);
 
+  const na = l.next_action || "";
+  const naLabel = NEXT_ACTION_LABEL[na] || "";
+  const naClass = NEXT_ACTION_CLASS[na] || "na-pruefen";
   card.innerHTML = `
     <div class="card-top">
       <div class="card-firma">${esc(l.firma)}</div>
       <div style="display:flex;gap:6px;align-items:center">${flag}${warmBadge}</div>
     </div>
     <span class="badge ${STATUS_CLASS[l.status] || "s-ink"}" style="margin-top:9px">${statusLabel(l.status)}</span>
+    ${naLabel ? `<span class="na-badge ${naClass}">${esc(naLabel)}</span>` : ""}
     ${l.schwaeche ? tagBadges(l.schwaeche) : ""}
     ${meta.length ? `<div class="card-meta">${meta.join("")}</div>` : ""}
   `;
@@ -547,6 +568,7 @@ function openDrawer(slug) {
         <button class="drawer-close" id="drawer-close" aria-label="Schließen">×</button>
       </div>
 
+      ${buildPriorityBlock(l)}
       ${l.schwaeche ? `<div class="drawer-section"><h3>Schwäche</h3>${tagBadges(l.schwaeche)}</div>` : ""}
 
       <div class="drawer-section">
@@ -1185,6 +1207,163 @@ function showOutreachPreview(slug, draft) {
 }
 
 /* =====================================================================
+   PRIORITÄT + NÄCHSTE AKTION — Hilfsfunktionen
+   ===================================================================== */
+
+/* Baut den Prioritäts-Breakdown-Block für den Drawer. */
+function buildPriorityBlock(l) {
+  const prio = l.priority;
+  const na = l.next_action || "";
+  const naLabel = NEXT_ACTION_LABEL[na] || na;
+  const naClass = NEXT_ACTION_CLASS[na] || "na-pruefen";
+
+  const naHtml = naLabel
+    ? `<div class="prio-action"><span class="na-badge ${naClass}">${esc(naLabel)}</span><span class="prio-action-label">Nächste Aktion</span></div>`
+    : "";
+
+  if (!prio || !prio.faktoren) {
+    return naHtml ? `<div class="drawer-section">${naHtml}</div>` : "";
+  }
+
+  const score = prio.score || 0;
+  const faktoren = prio.faktoren;
+  const FAKTOR_LABEL = {
+    befundstaerke: "Befundstärke",
+    segmentpassung: "Segmentpassung",
+    datenvollstaendigkeit: "Datenvollständigkeit",
+    wiedervorlage_faellig: "Wiedervorlage fällig",
+  };
+  const rows = Object.entries(faktoren).map(([key, f]) => {
+    const dots = "●".repeat(f.wert) + "○".repeat(Math.max(0, 3 - f.wert));
+    return `<div class="prio-row">
+      <span class="prio-label">${FAKTOR_LABEL[key] || key}</span>
+      <span class="prio-dots" aria-label="${f.wert} von 3">${dots}</span>
+      <span class="prio-erkl">${esc(f.erklaerung)}</span>
+    </div>`;
+  }).join("");
+
+  return `
+    <div class="drawer-section">
+      <h3>Priorität <span class="prio-score-inline">${score}/12</span></h3>
+      ${naHtml}
+      <div class="prio-breakdown">${rows}</div>
+    </div>`;
+}
+
+/* =====================================================================
+   FOKUS-ANSICHT — Top-Leads nach Priorität
+   ===================================================================== */
+
+function renderFokus() {
+  const host = document.getElementById("fokus-container");
+  if (!host) return;
+  const s = App.state;
+  if (!s || !s.leads || !s.leads.length) {
+    host.innerHTML = emptyState("🌱", "Keine Leads", "Noch keine Leads in der Pipeline.");
+    return;
+  }
+
+  // Aktive Leads (nicht verloren/inaktiv), nach score absteigend sortieren
+  const aktiv = s.leads.filter(l => !["verloren", "inaktiv"].includes(l.status));
+  const sorted = [...aktiv].sort((a, b) => {
+    const sa = (a.priority && a.priority.score) || 0;
+    const sb = (b.priority && b.priority.score) || 0;
+    return sb - sa;
+  });
+
+  const heute = sorted.filter(l => {
+    const wv = l.wiedervorlage || "";
+    const naechsteAktion = l.next_action || "";
+    if (wv && wv <= s.today) return true;  // Wiedervorlage fällig
+    if (naechsteAktion === "nachfassen") return true;
+    return false;
+  });
+  const top = sorted.slice(0, 5);
+
+  // Doppelte ausblenden: in "Heute" liegende auch in Top zeigen, aber als Gruppe
+  const heuteSlugs = new Set(heute.map(l => l.slug));
+  const topOhneHeute = top.filter(l => !heuteSlugs.has(l.slug));
+
+  const dueSet = new Set((s.report.wiedervorlage_faellig || []).map(r => r.slug));
+  const staleSet = new Set((s.report.keine_antwort || []).map(r => r.slug));
+
+  function fokusCard(l) {
+    const prio = l.priority || {};
+    const score = prio.score != null ? prio.score : "–";
+    const na = l.next_action || "";
+    const naLabel = NEXT_ACTION_LABEL[na] || "";
+    const naClass = NEXT_ACTION_CLASS[na] || "na-pruefen";
+    const isDue = dueSet.has(l.slug);
+    const isStale = staleSet.has(l.slug);
+    const flag = isStale
+      ? `<span class="flag-dot danger" title="Keine Antwort > 14 Tage"></span>`
+      : (isDue ? `<span class="flag-dot warn" title="Wiedervorlage fällig"></span>` : "");
+
+    // Faktor-Zeilen kompakt
+    const FAKTOR_SHORT = {
+      befundstaerke: "Befund",
+      segmentpassung: "Segment",
+      datenvollstaendigkeit: "Daten",
+      wiedervorlage_faellig: "Wiedervorlage",
+    };
+    const faktoren = prio.faktoren || {};
+    const faktorHtml = Object.entries(faktoren).map(([key, f]) => {
+      const dots = "●".repeat(f.wert) + "○".repeat(Math.max(0, 3 - f.wert));
+      return `<div class="fk-row" title="${esc(f.erklaerung)}">
+        <span class="fk-name">${FAKTOR_SHORT[key] || key}</span>
+        <span class="fk-dots">${dots}</span>
+      </div>`;
+    }).join("");
+
+    return `<div class="fokus-card reveal" style="cursor:pointer" data-slug="${esc(l.slug)}">
+      <div class="fokus-card-head">
+        <div>
+          <div class="fokus-firma">${esc(l.firma)}</div>
+          <span class="badge ${STATUS_CLASS[l.status] || "s-ink"}">${statusLabel(l.status)}</span>
+          ${l.warm ? `<span class="warm-badge">warm</span>` : ""}
+        </div>
+        <div class="fokus-right">
+          ${flag}
+          <div class="fokus-score" title="Prioritäts-Score">${score}<span>/12</span></div>
+        </div>
+      </div>
+      ${naLabel ? `<div class="fokus-na"><span class="na-badge ${naClass}">${esc(naLabel)}</span></div>` : ""}
+      ${l.schwaeche ? `<div class="fokus-schwaeche">${tagBadges(l.schwaeche)}</div>` : ""}
+      <div class="fokus-faktoren">${faktorHtml}</div>
+    </div>`;
+  }
+
+  let html = "";
+
+  if (heute.length) {
+    html += `<div class="fokus-section">
+      <h2 class="fokus-section-title">Heute / Fällig</h2>
+      <p class="fokus-section-sub">Wiedervorlage fällig oder Nachfassen steht an</p>
+      <div class="fokus-grid">${heute.map(fokusCard).join("")}</div>
+    </div>`;
+  }
+
+  if (topOhneHeute.length) {
+    html += `<div class="fokus-section">
+      <h2 class="fokus-section-title">Diese Woche — Top-Leads</h2>
+      <p class="fokus-section-sub">Höchste Priorität nach Befund, Segment, Datenvollständigkeit und Wiedervorlage</p>
+      <div class="fokus-grid">${topOhneHeute.map(fokusCard).join("")}</div>
+    </div>`;
+  }
+
+  if (!heute.length && !topOhneHeute.length) {
+    html = emptyState("✓", "Nichts fällig", "Keine Wiedervorlagen fällig, keine dringenden Leads. Schau in die Pipeline für den Überblick.");
+  }
+
+  host.innerHTML = html;
+
+  // Klick auf Karte → Drawer
+  host.querySelectorAll(".fokus-card[data-slug]").forEach(card => {
+    card.addEventListener("click", () => openDrawer(card.dataset.slug));
+  });
+}
+
+/* =====================================================================
    HELPERS
    ===================================================================== */
 
@@ -1227,6 +1406,7 @@ function switchView(view) {
   App.activeView = view;
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("is-active", t.dataset.view === view));
   document.getElementById("view-pipeline").classList.toggle("is-active", view === "pipeline");
+  document.getElementById("view-fokus").classList.toggle("is-active", view === "fokus");
   document.getElementById("view-discovery").classList.toggle("is-active", view === "discovery");
 }
 
