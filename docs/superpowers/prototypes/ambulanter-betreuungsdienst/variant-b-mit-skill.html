@@ -88,7 +88,8 @@
   .about p + p { margin-top: 18px; }
   .portrait { aspect-ratio: 4/5; border-radius: 12px; background: repeating-linear-gradient(135deg, #e6d8c1 0 14px, #e1d2b8 14px 28px); border: 1px dashed #a9906a; display: grid; place-items: end center; }
   .portrait span { font-size: 12.5px; color: #5c5140; background: rgba(244,236,224,.9); margin: 0 10px 12px; padding: 7px 10px; border-radius: 8px; text-align: center; }
-  .quote { margin-top: 22px; border-left: 3px solid var(--clay); padding-left: 18px; font-style: italic; color: #6a5c48; font-size: 15px; }
+  .quote { position: relative; margin-top: 26px; padding-left: 44px; font-style: italic; color: #55483a; font-size: 17px; line-height: 1.5; }
+  .quote::before { content: "\201C"; position: absolute; left: 0; top: -0.15em; font-family: "Palatino Linotype", Georgia, serif; font-size: 56px; line-height: 1; color: var(--clay); }
 
   /* --- Kontakt --- */
   .contact { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; }
