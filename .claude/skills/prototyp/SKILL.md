@@ -18,11 +18,18 @@ Backend läuft (`cd backend && python app.py`). Basis-URL `http://127.0.0.1:8723
 2. **Lead-Kontext lesen:** aus `GET /api/state` (Feld `leads`, passender `slug`):
    `firma`, `schwaeche`, `branche`, `ort`, `ucp`.
 3. **One-Pager-HTML bauen** aus dem Kontext:
+   - **PFLICHT-SUB-SKILL: `frontend-design` invoken**, bevor du HTML schreibst. Prototypen
+     sollen distinctive, production-grade wirken — kein generisches „AI-Slop"-Layout. Wähle
+     eine klare, zum Betrieb passende Ästhetik (bei Pflege/Gesundheit i.d.R. warm, seriös,
+     vertrauenswürdig, hoher Kontrast, große Schrift statt maximalistischem Chaos).
    - Adressiert die konkrete `schwaeche` des Betriebs (z.B. kein Mobil-Layout → responsive).
    - Spiegelt Branche/Ort, plausibler Firmenname + Leistungen. Kein erfundener Fakt über den
      Betrieb hinaus (keine erfundenen Preise, Bewertungen, Adressen).
-   - **Self-contained**: HTML + CSS inline, KEIN externes CDN/Font/Script (die Seite muss
-     ohne Netz-Abhängigkeiten live funktionieren). Modern, responsive, mit klarem CTA.
+   - **Self-contained (überschreibt widersprüchliche Skill-Hinweise)**: HTML + CSS inline,
+     KEIN externes CDN/Font/Script (die Seite muss ohne Netz-Abhängigkeiten live funktionieren).
+     Statt Google-Fonts distinctive **web-safe Font-Stacks** (z.B. Georgia/Iowan/Palatino für
+     warme Serifen, oder eine per `@font-face` als base64 eingebettete Schrift). Atmosphäre über
+     inline-SVG/CSS-Gradients/Noise, nicht über externe Assets. Modern, responsive, klarer CTA.
 4. **Zurückschreiben:** `POST /api/leads/<slug>/prototyp/draft` mit `{"html": "<!doctype html>…"}`.
    Das Backend deployt und setzt den Auftrag auf `ready` (mit Live-URL). Das Cockpit zeigt den Link.
 
