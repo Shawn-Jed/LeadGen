@@ -28,6 +28,7 @@ import mailer
 import outreach
 import prototyp
 import deploy
+import portfolio
 
 ROOT = Path(__file__).parent
 config.load_env(ROOT)  # .env → os.environ (SMTP + OUTREACH_SEND_MODE)
@@ -299,6 +300,9 @@ class CockpitHandler(BaseHTTPRequestHandler):
                 return
             if path == "/api/prototyp/pending":
                 self._send_json(prototyp.list_pending(ROOT))
+                return
+            if path == "/api/portfolio":
+                self._send_json(portfolio.load_manifest(ROOT))
                 return
             m = re.fullmatch(r"/api/leads/([^/]+)/prototyp", path)
             if m:

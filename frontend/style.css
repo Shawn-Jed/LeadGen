@@ -537,3 +537,87 @@ select { cursor: pointer; appearance: none;
   .fokus-grid { grid-template-columns: 1fr; }
   .prio-row   { grid-template-columns: 120px 48px 1fr; }
 }
+
+/* =====================================================================
+   PORTFOLIO-ANSICHT
+   ===================================================================== */
+.portfolio-container { padding: 28px 24px 60px; max-width: 900px; }
+
+.portfolio-header { margin-bottom: 28px; }
+.portfolio-title {
+  font-family: var(--font-display); font-weight: 500; font-size: 1.15rem;
+  color: var(--ink); margin: 0 0 4px;
+}
+.portfolio-sub { font-size: .82rem; color: var(--ink-faint); margin: 0; }
+
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.portfolio-card {
+  background: var(--surface); border: 1px solid var(--hairline);
+  border-radius: var(--radius); padding: 16px 18px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.portfolio-segment {
+  font-size: .74rem; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+
+.portfolio-problem,
+.portfolio-muster {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.portfolio-label {
+  font-size: .74rem; color: var(--ink-faint);
+}
+.portfolio-value {
+  font-size: .9rem; color: var(--ink); font-weight: 500;
+}
+
+.portfolio-footer {
+  margin-top: auto; padding-top: 10px;
+  border-top: 1px solid var(--hairline);
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.portfolio-artefakt {
+  font-size: .82rem; color: var(--accent);
+  text-decoration: none; font-weight: 500;
+}
+.portfolio-artefakt:hover { text-decoration: underline; }
+.portfolio-artefakt-none { font-size: .82rem; color: var(--ink-faint); }
+
+.portfolio-lernnotiz {
+  font-size: .78rem; color: var(--ink-faint);
+  margin: 0; font-style: italic;
+}
+
+/* Empty state */
+.portfolio-empty-wrap {
+  display: flex; justify-content: center; align-items: flex-start;
+  padding: 60px 24px;
+}
+.portfolio-empty {
+  text-align: center; max-width: 320px;
+}
+.portfolio-empty-count {
+  font-family: var(--font-mono, monospace); font-size: 2.4rem;
+  font-weight: 700; color: var(--ink-faint); margin: 0 0 2px;
+  opacity: .35;
+}
+.portfolio-empty-label {
+  font-size: .8rem; color: var(--ink-faint); margin: 0 0 18px;
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.portfolio-empty-msg {
+  font-size: .88rem; color: var(--ink-soft); margin: 0; line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+  .portfolio-grid { grid-template-columns: 1fr; }
+  .portfolio-container { padding: 20px 16px 48px; }
+}

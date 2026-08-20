@@ -1492,6 +1492,67 @@ function toast(msg, kind) {
 }
 
 /* =====================================================================
+   PORTFOLIO-ANSICHT
+   ===================================================================== */
+
+async function loadPortfolio() {
+  const host = document.getElementById("portfolio-container");
+  if (!host) return;
+  let manifest;
+  try {
+    manifest = await api("/api/portfolio");
+  } catch (e) {
+    host.innerHTML = emptyState("—", "Portfolio nicht verfügbar", "API-Antwort fehlgeschlagen.");
+    return;
+  }
+  renderPortfolio(host, manifest);
+}
+
+function renderPortfolio(host, manifest) {
+  const eintraege = (manifest && manifest.eintraege) || [];
+
+  if (!eintraege.length) {
+    host.innerHTML = `
+      <div class="portfolio-empty-wrap">
+        <div class="portfolio-empty">
+          <p class="portfolio-empty-count">0 / 2</p>
+          <p class="portfolio-empty-label">freigegebene Demos</p>
+          <p class="portfolio-empty-msg">Noch keine freigegebenen Muster — Portfolio startet ab 2 freigegebenen Demos.</p>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const cards = eintraege.map(e => {
+    const artefakt = e.artefaktpfad
+      ? `<a class="portfolio-artefakt" href="${esc(e.artefaktpfad)}" target="_blank" rel="noopener">Demo ansehen</a>`
+      : `<span class="portfolio-artefakt-none">Kein Artefakt</span>`;
+    return `<article class="portfolio-card reveal">
+      <div class="portfolio-segment">${esc(e.segment)}</div>
+      <div class="portfolio-problem">
+        <span class="portfolio-label">Problem</span>
+        <span class="portfolio-value">${esc(e.problemtyp)}</span>
+      </div>
+      <div class="portfolio-muster">
+        <span class="portfolio-label">Lösungsprinzip</span>
+        <span class="portfolio-value">${esc(e.muster)}</span>
+      </div>
+      <div class="portfolio-footer">
+        ${artefakt}
+        ${e.lernnotiz ? `<p class="portfolio-lernnotiz">${esc(e.lernnotiz)}</p>` : ""}
+      </div>
+    </article>`;
+  }).join("");
+
+  host.innerHTML = `
+    <div class="portfolio-header">
+      <h2 class="portfolio-title">Referenz-Muster</h2>
+      <p class="portfolio-sub">Freigegebene, anonymisierte Fallstudien — Problem, Lösungsprinzip und Demo.</p>
+    </div>
+    <div class="portfolio-grid">${cards}</div>`;
+}
+
+/* =====================================================================
    TABS + GLOBAL EVENTS
    ===================================================================== */
 function switchView(view) {
@@ -1500,6 +1561,8 @@ function switchView(view) {
   document.getElementById("view-pipeline").classList.toggle("is-active", view === "pipeline");
   document.getElementById("view-fokus").classList.toggle("is-active", view === "fokus");
   document.getElementById("view-discovery").classList.toggle("is-active", view === "discovery");
+  document.getElementById("view-portfolio").classList.toggle("is-active", view === "portfolio");
+  if (view === "portfolio") loadPortfolio();
 }
 
 function init() {
