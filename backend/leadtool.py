@@ -300,7 +300,7 @@ def priority_score(lead: dict, today: date) -> dict:
 
     Faktoren und Gewichte (transparent, kein Gesamtmix ohne Begründung):
       befundstaerke      0–3   Anzahl konkreter Schwächen
-      segmentpassung     0–3   warm > kalt; warm mit Branche/Ort > ohne
+      segmentpassung     0–3   warm mit Branche+Ort=3, warm sonst=2, kalt mit Branche=1, sonst 0
       datenvollstaendigkeit 0–3  Website + Schwäche + (warm: Email)
       wiedervorlage_faellig 0–3  fällig heute oder überfällig
     Gesamt = Summe (max 12).
@@ -353,9 +353,8 @@ def priority_score(lead: dict, today: date) -> dict:
         kontakt = lead.get("kontakt") or {}
         hat_email = bool((kontakt.get("email") or "").strip())
 
-    dv_punkte = sum([hat_website, hat_schwaeche, hat_email if warm else hat_website])
-    # Normalisierung: max 3 Punkte
-    # kalt: website(1) + schwaeche(1) + website nochmal nicht sinnvoll → max 2 → hochskalieren
+    # Normalisierung auf max 3 Punkte.
+    # kalt: nur website(1) + schwaeche(1) möglich → max 2 → auf 0–3 hochskalieren.
     if not warm:
         dv_wert = min(3, int(round((hat_website + hat_schwaeche) * 1.5)))
     else:
