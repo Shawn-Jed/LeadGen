@@ -321,17 +321,17 @@ class CockpitHandler(BaseHTTPRequestHandler):
                 slug = _valid_slug(m.group(1))
                 try:
                     meta, _ = leadtool.read_lead(ROOT, slug)
+                    ist_warm = True
                 except FileNotFoundError:
                     meta = {}
-                ps_data = outreach.load(ROOT, slug)
-                # prototyp_state aus build_state-Kontext: ggf. aus prototyp-Store lesen
+                    ist_warm = False
+                # prototyp_state aus dem Store (Demo-Link nur bei published)
                 try:
-                    import prototyp as _prototyp
-                    ps = _prototyp.load(ROOT, slug) or {"status": "none", "url": None}
+                    ps = prototyp.load(ROOT, slug) or {"status": "none", "url": None}
                 except Exception:
                     ps = {"status": "none", "url": None}
                 lead_ctx = {
-                    "warm": meta.get("warm", False),
+                    "warm": ist_warm,
                     "kalt_freigegeben": meta.get("kalt_freigegeben", False),
                     "kontakt": meta.get("kontakt") or {},
                     "anlass": meta.get("schwaeche") or meta.get("anlass") or "",
@@ -622,6 +622,11 @@ class CockpitHandler(BaseHTTPRequestHandler):
         if not repo or not base:
             raise ValueError("PROTOTYP_REPO_PATH/PROTOTYP_PAGES_BASE nicht gesetzt (.env)")
         html = state.get("html_local") or ""
+        if not html.strip():
+            raise ValueError(
+                f"Kein lokales HTML für '{slug}' — Publish würde eine leere Seite deployen. "
+                "Erst einen Entwurf (draft) speichern."
+            )
         url = deploy.deploy(slug, html, repo_path=Path(repo), pages_base=base)
         self._send_json(prototyp.mark_published(ROOT, slug, url))
 

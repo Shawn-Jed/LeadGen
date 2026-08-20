@@ -153,7 +153,7 @@ def validate_send(root: Path, slug: str) -> dict:
     if not state.get("draft"):
         raise ValueError(
             f"Kein fertiger Entwurf (draft) vorhanden für '{slug}' — "
-            "Status: {state.get('status', 'unbekannt')}"
+            f"Status: {state.get('status', 'unbekannt')}"
         )
 
     if state.get("status") == "sent":
