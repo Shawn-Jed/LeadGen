@@ -16,6 +16,7 @@ deployt (`shawn-jed.github.io/prototyp/<slug>/`) und der lokale Ordner hier mit 
 | Slug (Ordner) | Firma | Branche | Ort | Live |
 |---|---|---|---|---|
 | `minnemann-elektrotechnik` | Minnemann Elektrotechnik | Elektrotechnik | Kranichweg 11, 22305 HH | [live](https://shawn-jed.github.io/prototyp/minnemann-elektrotechnik/) · [lokal](minnemann-elektrotechnik/index.html) |
+| `ambulanter-betreuungsdienst` | Ambulanter Betreuungsdienst Düwel | Pflegedienst | Krohnskamp 13, 22301 HH | [live](https://shawn-jed.github.io/prototyp/ambulanter-betreuungsdienst/) · [lokal](ambulanter-betreuungsdienst/index.html) |
 
 ## Namens-Konvention
 
