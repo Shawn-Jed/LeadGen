@@ -38,15 +38,17 @@ Backend läuft (`cd backend && python app.py`). Basis-URL `http://127.0.0.1:8723
    `{"html": "<!doctype html>…"}`. Das Backend speichert das HTML **lokal** und setzt den
    Status auf **`draft_ready`** — es **deployt NICHT** und veröffentlicht nichts. Das Cockpit
    zeigt „Entwurf bereit, lokal prüfbar".
-5. **Freigabe + Veröffentlichung (menschliche Einzelentscheidung, kanonische Statusmaschine):**
-   `none → pending → draft_ready → approved_local → published` (+ `rework`/`archived`).
-   - `POST …/prototyp/approve` → `approved_local` (nur aus `draft_ready`; erst wenn die
-     Rubrik-Gate der Qualitätsschleife sitzt). Danach Portfolio-Eintrag anlegen
-     (`portfolio.add_entry`) mit `muster` + `lernnotiz` → speist den nächsten Brief (Flywheel).
-   - `POST …/prototyp/publish` → deployt nach GitHub Pages + `published` (nur aus `approved_local`).
+5. **Direkt veröffentlichen (Standard, Shawn-Vorgabe):** Sobald die Rubrik-Gate der
+   Qualitätsschleife sitzt, fährst du den Rest **automatisch** durch — kein manueller Klick:
+   - `POST …/prototyp/approve` → `approved_local`.
+   - `POST …/prototyp/publish` → deployt nach GitHub Pages **und** legt lokal
+     `prototypes/<slug>/` mit `index.html` + `info.md` (inkl. Live-Link) an; setzt `published` + URL.
+   - Danach Portfolio-Eintrag (`portfolio.add_entry`) mit `muster` + `lernnotiz` (Flywheel) und
+     Zeile in `prototypes/README.md` ergänzen.
    - `POST …/prototyp/rework` bzw. `…/archive` für Korrektur bzw. Aussortieren.
-   Ein öffentlicher Link entsteht **niemals** aus `pending`/`draft_ready` — nur über den
-   bewussten Publish-Schritt.
+   Kanonische Status bleiben `none → pending → draft_ready → approved_local → published`
+   (+ `rework`/`archived`). Die Qualitäts-Rubrik ist die einzige Bremse vor dem Publish, nicht
+   ein separater Freigabe-Klick.
 
 ## Watch-Modus (nahtlos)
 Für sofortige Demos: mit dem `/loop`-Skill diese Anleitung in kurzem Intervall laufen lassen
@@ -54,8 +56,9 @@ Für sofortige Demos: mit dem `/loop`-Skill diese Anleitung in kurzem Intervall 
 der Auftrag `pending`; das Cockpit zeigt „Demo wird gebaut…".
 
 ## Grenzen
-- Du deployst nie selbst und der `draft`-Endpunkt deployt nicht mehr — Veröffentlichung
-  passiert ausschließlich über den separaten `publish`-Schritt nach `approved_local`
-  (menschliche Einzelfreigabe). Der Standardfluss endet bei `draft_ready`.
+- Der `draft`-Endpunkt deployt selbst nicht — veröffentlicht wird über den `publish`-Schritt,
+  den du nach bestandener Rubrik automatisch fährst. Standardfluss endet bei **`published`**
+  (lokaler Ordner `prototypes/<slug>/` + Live-Pages-URL). `publish` ist die einzige Stelle mit
+  echtem Git-Push ins Pages-Repo.
 - Recht: Die Demo trägt den Firmennamen des Betriebs und wird öffentlich unter Shawns
   Pages-URL sichtbar. Shawn verantwortet den Einsatz pro Lead.

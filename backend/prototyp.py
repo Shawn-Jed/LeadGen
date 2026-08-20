@@ -145,6 +145,19 @@ def mark_ready(root: Path, slug: str, url: str) -> dict:
     return data
 
 
+def write_bundle(prototypes_dir: Path, slug: str, html: str, info_md: str) -> Path:
+    """Legt den lokalen Prototyp-Ordner an: <prototypes_dir>/<slug>/index.html + info.md.
+
+    Der Ordner ist die versionierbare Ablage je Demo (HTML-Kopie + Infos inkl. Live-Link).
+    Gibt den Ordnerpfad zurück.
+    """
+    d = Path(prototypes_dir) / slug
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "index.html").write_text(html, encoding="utf-8")
+    (d / "info.md").write_text(info_md, encoding="utf-8")
+    return d
+
+
 def list_pending(root: Path) -> list[dict]:
     """Gibt alle Einträge mit Status 'pending' zurück (nach Migration)."""
     d = _dir(root)

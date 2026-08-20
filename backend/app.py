@@ -209,6 +209,49 @@ def _valid_slug(slug: str) -> str:
     return slug
 
 
+def _lead_summary(slug: str) -> dict:
+    """Best-effort Firma/Schwäche/Ort/Branche für einen Slug (warm zuerst, dann Pipeline)."""
+    try:
+        meta, _ = leadtool.read_lead(ROOT, slug)
+        return {"firma": meta.get("firma", ""), "schwaeche": meta.get("schwaeche", ""),
+                "ort": meta.get("ort", ""), "branche": meta.get("branche", "")}
+    except FileNotFoundError:
+        pass
+    try:
+        for row in leadtool.read_pipeline(ROOT):
+            if leadtool.slugify(row.get("firma", "")) == slug:
+                return {"firma": row.get("firma", ""), "schwaeche": row.get("schwaeche", ""),
+                        "ort": row.get("ort", ""), "branche": row.get("branche", "")}
+    except (FileNotFoundError, OSError):
+        pass
+    return {"firma": slug, "schwaeche": "", "ort": "", "branche": ""}
+
+
+def _prototyp_info_md(slug: str, url: str, info: dict) -> str:
+    """Baut den info.md-Text für den lokalen Prototyp-Ordner (inkl. Live-Link)."""
+    zeilen = [
+        f"# Prototyp — {info.get('firma') or slug}",
+        "",
+        f"- **Slug:** {slug}",
+        f"- **Live (GitHub Pages):** {url}",
+        f"- **Veröffentlicht:** {date.today().isoformat()}",
+    ]
+    if info.get("ort"):
+        zeilen.append(f"- **Ort:** {info['ort']}")
+    if info.get("branche"):
+        zeilen.append(f"- **Branche:** {info['branche']}")
+    if info.get("schwaeche"):
+        zeilen.append(f"- **Adressierte Schwäche:** {info['schwaeche']}")
+    zeilen += [
+        "",
+        "HTML-Kopie: [index.html](index.html)",
+        "",
+        "> Öffentlich unter Shawns Pages-URL sichtbar (echter Firmenname). Demo/unverbindlich.",
+        "",
+    ]
+    return "\n".join(zeilen)
+
+
 def _resolve_run_file(file_param: str) -> Path:
     """Validiert einen 'discovery/<name>.json'-Pfad gegen Traversal; gibt Path zurück.
 
@@ -628,7 +671,12 @@ class CockpitHandler(BaseHTTPRequestHandler):
                 "Erst einen Entwurf (draft) speichern."
             )
         url = deploy.deploy(slug, html, repo_path=Path(repo), pages_base=base)
-        self._send_json(prototyp.mark_published(ROOT, slug, url))
+        data = prototyp.mark_published(ROOT, slug, url)
+        # Lokalen Ordner prototypes/<slug>/ mit HTML-Kopie + info.md (inkl. Live-Link) anlegen
+        info = _lead_summary(slug)
+        info_md = _prototyp_info_md(slug, url, info)
+        prototyp.write_bundle(ROOT.parent / "prototypes", slug, html, info_md)
+        self._send_json(data)
 
     def _handle_prototyp_rework(self, slug: str, body: dict) -> None:
         """Markiert Entwurf zur Überarbeitung."""

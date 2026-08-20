@@ -8,6 +8,13 @@ import prototyp
 # Grundlegende Übergänge (kanonisch)
 # ---------------------------------------------------------------------------
 
+def test_write_bundle_creates_html_and_info(tmp_path):
+    d = prototyp.write_bundle(tmp_path / "prototypes", "lead-x", "<html>hi</html>", "# Info\nlink")
+    assert d.name == "lead-x"
+    assert (d / "index.html").read_text(encoding="utf-8") == "<html>hi</html>"
+    assert "Info" in (d / "info.md").read_text(encoding="utf-8")
+
+
 def test_save_request_creates_pending(tmp_path):
     data = prototyp.save_request(tmp_path, "lead-x")
     assert data["status"] == "pending"

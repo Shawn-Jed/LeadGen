@@ -1,20 +1,24 @@
-# Prototypen — lokale Demo-One-Pager
+# Prototypen — Demo-One-Pager (lokal + live)
 
 Ein Ordner pro Lead, benannt nach dem Lead-**Slug** (identisch zum Backend:
-`backend/prototyp/<slug>.json` und Pipeline/CRM). Jeder Ordner enthält die fertige
-`index.html` — einfach im Browser öffnen.
+`backend/prototyp/<slug>.json` und Pipeline/CRM). Jeder Ordner enthält:
 
-**Kein GitHub-Pages-Deploy** — bewusst rein lokal. Zum Zeigen: HTML-Datei direkt
-per Doppelklick / `file://` öffnen.
+- `index.html` — die fertige Demo (self-contained, im Browser öffenbar)
+- `info.md` — Infos zum Lead + **Live-Link** zur GitHub-Pages-Fassung
+
+**GitHub-Pages-Hosting ist Standard:** Jede freigegebene Demo wird direkt ins Pages-Repo
+deployt (`shawn-jed.github.io/prototyp/<slug>/`) und der lokale Ordner hier mit HTML-Kopie +
+`info.md` (inkl. Live-Link) angelegt. Der Ordner entsteht automatisch beim `publish`
+(Backend-Handler `/api/leads/<slug>/prototyp/publish`).
 
 ## Übersicht
 
-| Slug (Ordner) | Firma | Branche | Ort | Stand | Öffnen |
-|---|---|---|---|---|---|
-| `minnemann-elektrotechnik` | Minnemann Elektrotechnik | Elektrotechnik | Kranichweg 11, 22305 HH | erstellt | [index.html](minnemann-elektrotechnik/index.html) |
+| Slug (Ordner) | Firma | Branche | Ort | Live |
+|---|---|---|---|---|
+| `minnemann-elektrotechnik` | Minnemann Elektrotechnik | Elektrotechnik | Kranichweg 11, 22305 HH | [live](https://shawn-jed.github.io/prototyp/minnemann-elektrotechnik/) · [lokal](minnemann-elektrotechnik/index.html) |
 
 ## Namens-Konvention
 
 - Ordnername = Lead-Slug (kleingeschrieben, Bindestriche), z. B. `minnemann-elektrotechnik`.
-- Datei immer `index.html` im Slug-Ordner.
-- Neuer Prototyp → neuer Slug-Ordner + Zeile in der Tabelle oben.
+- Dateien immer `index.html` + `info.md` im Slug-Ordner.
+- Neuer Prototyp → Ordner + `info.md` entstehen beim `publish`; Zeile hier oben ergänzen.
